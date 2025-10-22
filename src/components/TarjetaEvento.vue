@@ -2,17 +2,29 @@
   <div class="evento-card">
     <div class="evento-imagen">imagen evento</div>
     <div class="evento-info">
-      <p><strong>Nombre:</strong> Nombre del evento</p>
-      <p><strong>Lugar:</strong> Lugar del evento</p>
-      <p><strong>Día:</strong> 08 de Diciembre</p>
-      <p><strong>Horario:</strong> 19:00 hs</p>
-      <p><strong>Modalidad:</strong> Presencial</p>
-      <p class="evento-precio">Precio: $5000</p>
+      <p><strong>Nombre:</strong> {{ nombre }}</p>
+      <p><strong>Lugar:</strong> {{ lugar }}</p>
+      <p><strong>Día:</strong> {{ dia }}</p>
+      <p><strong>Horario:</strong> {{ horario }}</p>
+      <p><strong>Modalidad:</strong> {{ modalidad }}</p>
+      <p class="evento-precio">Precio: {{ precio }}</p>
     </div>
     <button class="evento-boton">Comprar</button>
   </div>
 </template>
 
+<script setup>
+const props = defineProps({
+  id: [String, Number],
+  nombre: { type: String, required: true },
+  lugar: String,
+  dia: { type: String, required: true },
+  horario: String,
+  modalidad: { type: String, required: true },
+  precio: [String, Number]
+});
+
+</script>
 
 <style scoped>
   body {
