@@ -42,6 +42,7 @@ watch(
   </div>
 </template>
 
+
 <style scoped>
 .evento-card {
   width: 300px;
