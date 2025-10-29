@@ -4,9 +4,8 @@
       <div class="logo">
         <span class="logo-text">Ticket<span class="highlight">Ort</span></span>
       </div>
-      <div class="user-info">
-        <span class="greeting">Hola, ORGANIZADOR</span>
-        <div class="user-avatar"></div>
+      <div class="user-actions">
+        <router-link to="/login" class="login-btn">Iniciar sesión</router-link>
       </div>
     </header>
 
@@ -15,7 +14,7 @@
       <div class="no-events">
         <div class="icon">🔍</div>
         <p>No tienes eventos creados</p>
-        <button class="btn-crear">CREAR EVENTO</button>
+        <button class="btn-crear" @click="goLogin">CREAR EVENTO</button>
       </div>
     </main>
 
@@ -26,6 +25,13 @@
 
   </div>
 </template>
+
+<script setup>
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+const goLogin = () => router.push('/login')
+</script>
 
 <style scoped>
 *{
@@ -70,27 +76,22 @@ body {
 }
 
 
-.user-info {
+.user-actions {
   display: flex;
   align-items: center;
-  gap: 10px;
 }
 
-.user-avatar {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  border: 2px solid white;
-  background-color: #fff;
+.login-btn {
+  background-color: #d9eaff;
+  border: 1px solid #000;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-weight: 700;
+  color: #111;
+  text-decoration: none;
 }
 
-.greeting {
-  background-color: white;
-  color: black;
-  padding: 5px 10px;
-  border-radius: 3px;
-}
-
+.login-btn:hover { background-color: #c5e1ff; }
 
 .main-content {
   flex: 1;
