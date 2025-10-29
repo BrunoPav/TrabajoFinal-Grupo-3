@@ -15,21 +15,32 @@
       </div>
     </nav>
 
-    <section class="cards">
-      <article class="card" v-for="event in events" :key="event.id">
+    <div class="event-meta" v-if="eventosGuardados == null || eventosGuardados.length === 0" >
+        <div class="icon">🔍</div>
+        <p>No tienes eventos creados</p>
+        <button class="btn-crear" @click="goABM">CREAR EVENTO</button>
+    </div>
+
+    <section class="cards">      
+      <article class="card" v-for="event in eventosGuardados" :key="event.id">
         <div class="card-image">imagen evento</div>
         <div class="card-body">
           <ul class="event-meta">
-            <li class="title">{{ event.title }}</li>
-            <li>Lugar: {{ event.location }}</li>
-            <li>Día: {{ event.date }}</li>
-            <li>Horario: {{ event.time }}</li>
-            <li>Modalidad: {{ event.mode }}</li>
-            <li>Precio: ${{ event.price }}</li>
+            <li class="title">{{ event.nombre }}</li>
+            <li>Lugar: {{ event.lugar }}</li>
+            <li>Día: {{ event.dia }}</li>
+            <li>Horario: {{ event.horario }}</li>
+            <li>Modalidad: {{ event.modalidad }}</li>
+            <li>Precio: ${{ event.precio }}</li>
           </ul>
           <button class="buy" @click="goLogin">COMPRAR</button>
         </div>
       </article>
+
+      <div class="card-body">
+          <button class="buy" @click="goABM">Nuevo Evento</button>
+      </div>
+
     </section>
   </div>
 </template>
@@ -37,15 +48,17 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import TarjetaEvento from '../components/TarjetaEvento.vue'
+import { useEventoStore } from '../stores/eventoStore'
+
+
+const eventoStore = useEventoStore()//instancio el store de eventos
+const eventosGuardados = eventoStore.eventos//le paso el array de los eventos guardados
 
 const router = useRouter()
 const goLogin = () => router.push('/login')
+const goABM = () => router.push('/organizador/crear')
 
-const events = ref([
-  { id: 1, title: 'Nombre evento', location: 'Lugar imagen evento', date: '15/11/2025', time: '21:00', mode: 'Presencial', price: 2500 },
-  { id: 2, title: 'Nombre evento', location: 'Lugar imagen evento', date: '22/11/2025', time: '20:00', mode: 'Virtual', price: 3000 },
-  { id: 3, title: 'Nombre evento', location: 'Lugar imagen evento', date: '05/12/2025', time: '20:30', mode: 'Presencial', price: 2200 }
-])
 </script>
 
 <style scoped>

@@ -1,7 +1,12 @@
 <script setup>
 import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+import { useEventoStore } from '../stores/eventoStore';
 
-import TarjetaEvento from '../components/TarjetaEvento.vue';
+const router = useRouter()
+const goHome = () => router.push('/')
+
+const eventoStore = useEventoStore()
 
 const evento = ref({
   nombre: '',
@@ -10,18 +15,20 @@ const evento = ref({
   horario: '',
   modalidad: '',
   precio: 0,
-  imagen: 'https://picsum.photos/300/200'
+  imagen: ''
 })
 
-
-
-
+function agregarEvento() {
+  eventoStore.agregarEvento({ ...evento.value })
+  router.push('/')//vuelve al home
+}
+  
 </script>
 
 <template>
   <title>Gestor de Eventos - TicketOrt</title>
   <header>
-    <div class="logo">TicketOrt</div>
+    <div class="logo" @click="goHome">TicketOrt</div>
     <div class="perfil">
       <span>Hola, ORGANIZADOR</span>
       <div class="avatar"></div>
@@ -31,44 +38,40 @@ const evento = ref({
 
   <main class="contenedor">
     <section class="formulario">
-      <h2><u>Completa el Formulario con los datos de tu evento</u></h2>
-      <form>
+      <h2>Completa el Formulario</h2>
+
+      <form @submit.prevent="agregarEvento()">
         <label>Nombre del evento:</label>
-        <input type="text" placeholder="Ej: RockFest 2025" v-model="evento.nombre"> 
-        
+        <input v-model="evento.nombre" type="text" placeholder="Ej: RockFest 2025" />
 
         <label>Lugar:</label>
-        <input type="text" placeholder="Ej: Estadio Central" v-model="evento.lugar">
+        <input v-model="evento.lugar" type="text" placeholder="Ej: Estadio Central" />
 
         <label>Fecha:</label>
-        <input type="date" v-model="evento.dia">
-
-        <label>Capacidad:</label>
-        <input type="number" placeholder="Ej: 5000" v-model="evento.capacidad">
+        <input v-model="evento.dia" type="date" />
 
         <label>Horario:</label>
-        <input type="time" v-model="evento.horario">
+        <input v-model="evento.horario" type="time" />
 
         <label>Modalidad:</label>
         <select v-model="evento.modalidad">
-          <option value="Presencial">Presencial</option>
-          <option value="Virtual">Virtual</option>
+          <option>Presencial</option>
+          <option>Virtual</option>
         </select>
 
         <label>Precio:</label>
-        <input type="number" placeholder="Ej: 1500" v-model="evento.precio">
+        <input v-model="evento.precio" type="number" placeholder="Ej: 1500" />
+
+        <div class="botones">
+          <button type="reset" @click="goHome" >
+            CANCELAR
+          </button>
+          <button type="submit" @click="agregarEvento">
+            GUARDAR EVENTO
+          </button>
+        </div>
       </form>
     </section>
-
-    
-    
-    <aside class="preview">
-      <div class="imagen">imagen evento</div>
-      <div class="botones">
-        <button>CANCELAR EVENTO</button>
-        <button>GUARDAR EVENTO</button>
-      </div>
-    </aside>
   </main>
 </template>
 

@@ -1,7 +1,7 @@
 <template>
   <div class="login-container">
     <div class="login-card">
-      <h1 class="logo">Ticket<span class="highlight">Ort</span></h1>
+      <h1 class="logo" @click="goHome">Ticket<span class="highlight">Ort</span></h1>
       <h2 class="welcome">Bienvenidos</h2>
 
       <form class="login-form" >
@@ -19,6 +19,9 @@
 
 <script setup>
 import { ref } from "vue";
+import { useRouter } from "vue-router";
+const router = useRouter()
+const goHome = () => router.push('/')
 
 const email = ref("");
 const password = ref("");

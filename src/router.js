@@ -4,7 +4,7 @@ import About from './components/About.vue'
 import TarjetaEvento from './components/TarjetaEvento.vue'
 import Login from './views/Login.vue'
 
-import HomeView from './views/HomeView.vue'
+
 import ABMEvento from './views/ABMEvento.vue'
 import CompraView from './views/CompraView.vue'
 
@@ -13,7 +13,6 @@ const routes = [
   { path: '/about', component: About },
   { path: '/login', name: 'Login', component: Login },
 
-  { path: '/organizador', name: 'OrganizadorHome', component: HomeView },
   { path: '/organizador/crear', name: 'OrganizadorCrear', component: ABMEvento },
   { path: '/usuario', name: 'UsuarioHome', component: CompraView },
   {
