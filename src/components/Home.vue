@@ -21,8 +21,8 @@
         <button class="btn-crear" @click="goABM">CREAR EVENTO</button>
     </div>
 
-    <section class="cards">      
-      <article class="card" v-for="event in eventosGuardados" :key="event.id">
+    <section class="cards" v-for="event in eventosGuardados" :key="event.id">      
+      <article class="card" >
         <div class="card-image">imagen evento</div>
         <div class="card-body">
           <ul class="event-meta">
@@ -37,7 +37,7 @@
         </div>
       </article>
 
-      <div class="card-body">
+      <div class="new-card">
           <button class="buy" @click="goABM">Nuevo Evento</button>
       </div>
 
@@ -120,6 +120,7 @@ const goABM = () => router.push('/organizador/crear')
 .card-body { padding: 1rem 1.25rem 1.25rem; }
 .event-meta { list-style: none; padding: 0; margin: 0 0 1rem; color: #4b5563; }
 .event-meta .title { font-size: 1.1rem; color: #1f2937; margin-bottom: 0.5rem; }
+.new-card { display: flex; align-items: center; justify-content: center; background: #e0e7ff; border: 2px dashed #a5b4fc; border-radius: 4px; }
 
 .buy { width: 180px; display: inline-block; margin-left: auto; background: #93c5fd; border: 1px solid #3b82f6; color: #111827; font-weight: 800; padding: 0.5rem 1rem; border-radius: 6px; }
 .buy:hover { background: #60a5fa; }
