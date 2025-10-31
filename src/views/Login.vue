@@ -4,7 +4,7 @@
       <h1 class="logo" @click="goHome">Ticket<span class="highlight">Ort</span></h1>
       <h2 class="welcome">Bienvenidos</h2>
 
-      <form class="login-form" >
+      <form class="login-form" @submit.prevent="login">
         <label for="email">Ingresa tu Mail</label>
         <input type="email" id="email" v-model="email" required />
 
@@ -19,14 +19,22 @@
 
 <script setup>
 import { ref } from "vue";
-import { useRouter } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 const router = useRouter()
+const route = useRoute()
 const goHome = () => router.push('/')
 
 const email = ref("");
 const password = ref("");
 
-
+const login = () => {
+  const redirect = route.query.redirect
+  if (redirect && typeof redirect === 'string') {
+    router.push(redirect)
+  } else {
+    router.push('/')
+  }
+}
 </script>
 
 <style scoped>

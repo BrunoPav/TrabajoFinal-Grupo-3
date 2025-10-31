@@ -18,11 +18,11 @@
   <main>
     
     <div class="info">
-      <p><strong>Nombre evento</strong></p>
-      <p>Lugar imagen evento</p>
-      <p>Día</p>
-      <p>Horario</p>
-      <p>Modalidad: Presencial / Virtual</p>
+      <p><strong>{{ evento?.nombre || 'Nombre evento' }}</strong></p>
+      <p>{{ evento?.lugar || 'Lugar imagen evento' }}</p>
+      <p>{{ evento?.dia || 'Día' }}</p>
+      <p>{{ evento?.horario || 'Horario' }}</p>
+      <p>Modalidad: {{ evento?.modalidad || 'Presencial / Virtual' }}</p>
     </div>
 
     
@@ -46,22 +46,54 @@
         </tr>
         <tr>
           <td>Entrada Gral.</td>
-          <td>$15.000</td>
+          <td>${{ precioFmt }}</td>
           <td>
             <div class="cantidad-control">
-              <button>-</button>
-              <span>0</span>
-              <button>+</button>
+              <button @click="dec">-</button>
+              <span>{{ cantidad }}</span>
+              <button @click="inc">+</button>
             </div>
           </td>
         </tr>
       </table>
 
-      <button class="btn-siguiente">SIGUIENTE</button>
+      <button class="btn-siguiente" @click="proceed">SIGUIENTE</button>
     </div>
   </main>
 
 </template> 
+
+<script setup>
+import { computed, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { useEventoStore } from '../stores/eventoStore'
+
+const route = useRoute()
+const router = useRouter()
+const eventoStore = useEventoStore()
+
+const id = computed(() => Number(route.query.id))
+const evento = computed(() => eventoStore.eventos.find(e => e.id === id.value))
+
+const cantidad = ref(0)
+const inc = () => { cantidad.value++ }
+const dec = () => { if (cantidad.value > 0) cantidad.value-- }
+
+const precio = computed(() => evento.value?.precio ?? 0)
+const precioFmt = computed(() => precio.value.toLocaleString('es-AR'))
+
+const proceed = () => {
+  if (!evento.value) {
+    router.push('/')
+    return
+  }
+  if (cantidad.value <= 0) {
+    alert('Seleccioná al menos 1 entrada')
+    return
+  }
+  alert(`Compraste ${cantidad.value} entrada(s) para ${evento.value.nombre} por $${(cantidad.value * precio.value).toLocaleString('es-AR')}`)
+}
+</script>
 
 <style>
     * {
@@ -75,7 +107,7 @@
       padding: 0;
     }
 
-    /* --- NAVBAR --- */
+
     header {
       background-color: #4a90e2;
       color: white;
@@ -126,7 +158,7 @@
       border: 2px solid #ccc;
     }
 
-    /* --- MAIN LAYOUT --- */
+
     main {
       display: grid;
       grid-template-columns: 2fr 1fr;
@@ -134,7 +166,7 @@
       padding: 20px;
     }
 
-    /* --- INFO EVENTO --- */
+ 
     .info {
       background-color: white;
       border: 1px solid #ccc;
@@ -147,7 +179,6 @@
       color: #333;
     }
 
-    /* --- IMAGEN EVENTO --- */
     .event-image {
       background-color: rgb(52, 146, 146);
       border: 1px solid #ccc;
@@ -158,7 +189,7 @@
       min-height: 180px;
     }
 
-    /* --- DESCRIPCIÓN --- */
+  
     .descripcion {
       grid-column: 1 / 3;
       background-color: white;
@@ -173,7 +204,7 @@
       color: #333;
     }
 
-    /* --- TABLA TICKETS --- */
+
     .tickets {
       grid-column: 1 / 3;
       background-color: white;
@@ -216,7 +247,6 @@
       border-radius: 4px;
     }
 
-    /* --- BOTÓN SIGUIENTE --- */
     .btn-siguiente {
       display: block;
       margin: 0 auto;
@@ -234,6 +264,7 @@
       background-color: #8ab4e6;
     }
 </style>
+
 
 
 

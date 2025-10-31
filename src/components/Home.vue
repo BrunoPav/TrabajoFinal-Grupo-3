@@ -21,8 +21,8 @@
         <button class="btn-crear" @click="goABM">CREAR EVENTO</button>
     </div>
 
-    <section class="cards" v-for="event in eventosGuardados" :key="event.id">      
-      <article class="card" >
+    <section class="cards" v-else>
+      <article class="card" v-for="event in eventosGuardados" :key="event.id">
         <div class="card-image">imagen evento</div>
         <div class="card-body">
           <ul class="event-meta">
@@ -33,14 +33,13 @@
             <li>Modalidad: {{ event.modalidad }}</li>
             <li>Precio: ${{ event.precio }}</li>
           </ul>
-          <button class="buy" @click="goLogin">COMPRAR</button>
+          <button class="buy" @click="goComprar(event)">COMPRAR</button>
         </div>
       </article>
 
       <div class="new-card">
           <button class="buy" @click="goABM">Nuevo Evento</button>
       </div>
-
     </section>
   </div>
 </template>
@@ -52,18 +51,21 @@ import TarjetaEvento from '../components/TarjetaEvento.vue'
 import { useEventoStore } from '../stores/eventoStore'
 
 
-const eventoStore = useEventoStore()//instancio el store de eventos
-const eventosGuardados = eventoStore.eventos//le paso el array de los eventos guardados
+const eventoStore = useEventoStore()
+const eventosGuardados = eventoStore.eventos
 
 const router = useRouter()
 const goLogin = () => router.push('/login')
 const goABM = () => router.push('/organizador/crear')
 
+const goComprar = (event) => {
+  router.push({ name: 'UsuarioHome', query: { id: event.id } })
+}
 </script>
 
 <style scoped>
 .navbar {
-  background-color: #3b82f6; /* azul */
+  background-color: #3b82f6; 
   color: #fff;
   padding: 0.75rem 0;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -95,7 +97,7 @@ const goABM = () => router.push('/organizador/crear')
 .nav-center { display: flex; justify-content: center; gap: 1rem; }
 
 .nav-btn {
-  background: #dbeafe; /* azul muy claro */
+  background: #dbeafe; 
   color: #1f2937;
   text-decoration: none;
   padding: 0.5rem 1rem;
@@ -109,12 +111,10 @@ const goABM = () => router.push('/organizador/crear')
 .greeting { background: #eef2ff; color: #1f2937; padding: 0.4rem 0.75rem; border-radius: 6px; }
 .avatar { width: 56px; height: 56px; border-radius: 50%; background: #fff; border: 2px solid rgba(0,0,0,0.1); }
 
-/* Layout general */
 .home-view { max-width: 1200px; margin: 0 auto; }
 
 .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; }
 
-/* Card del evento */
 .card { background: #f3f4f6; border: 2px solid #cbd5e1; border-radius: 4px; }
 .card-image { height: 140px; background: #ffffff; border-bottom: 2px solid #cbd5e1; display: flex; align-items: center; justify-content: center; color: #6b7280; }
 .card-body { padding: 1rem 1.25rem 1.25rem; }
