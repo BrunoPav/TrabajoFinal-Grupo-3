@@ -22,52 +22,63 @@ function agregarEvento() {
   eventoStore.agregarEvento({ ...evento.value })
   router.push('/')//vuelve al home
 }
-  
+
 </script>
 
 <template>
   <title>Gestor de Eventos - TicketOrt</title>
-  <header>
+  <header class="app-header">
     <div class="logo" @click="goHome">TicketOrt</div>
     <div class="perfil">
       <span>Hola, ORGANIZADOR</span>
       <div class="avatar"></div>
     </div>
   </header>
-  
 
   <main class="contenedor">
-    <section class="formulario">
-      <h2>Completa el Formulario</h2>
+    <section class="formulario-container">
+      <h2 class="title-form">Completa el Formulario</h2>
 
-      <form @submit.prevent="agregarEvento()">
-        <label>Nombre del evento:</label>
-        <input v-model="evento.nombre" type="text" placeholder="Ej: RockFest 2025" />
+      <form @submit.prevent="agregarEvento()" class="form-grid">
 
-        <label>Lugar:</label>
-        <input v-model="evento.lugar" type="text" placeholder="Ej: Estadio Central" />
+        <div class="form-inputs">
+          <label>Nombre del evento:</label>
+          <input v-model="evento.nombre" type="text" placeholder="Ej: RockFest 2025" required />
 
-        <label>Fecha:</label>
-        <input v-model="evento.dia" type="date" />
+          <label>Lugar:</label>
+          <input v-model="evento.lugar" type="text" placeholder="Ej: Estadio Central" required />
 
-        <label>Horario:</label>
-        <input v-model="evento.horario" type="time" />
+          <label>Fecha:</label>
+          <input v-model="evento.dia" type="date" required />
 
-        <label>Modalidad:</label>
-        <select v-model="evento.modalidad">
-          <option>Presencial</option>
-          <option>Virtual</option>
-        </select>
+          <label>Horario:</label>
+          <input v-model="evento.horario" type="time" required />
 
-        <label>Precio:</label>
-        <input v-model="evento.precio" type="number" placeholder="Ej: 1500" />
+          <label>Modalidad:</label>
+          <select v-model="evento.modalidad" required>
+            <option value="" disabled>Seleccione modalidad</option>
+            <option>Presencial</option>
+            <option>Virtual</option>
+          </select>
 
-        <div class="botones">
-          <button type="reset" @click="goHome" >
-            CANCELAR
+          <label>Precio:</label>
+          <input v-model.number="evento.precio" type="number" min="0" placeholder="Ej: 1500" required />
+        </div>
+
+        <div class="form-actions">
+          <div class="image-box">
+            <span>Imagen evento</span>
+          </div>
+
+          <button type="button" class="btn-subir">
+            SUBIR IMAGEN
           </button>
-          <button type="submit" @click="agregarEvento">
+
+          <button type="submit" class="btn-action save" @click="agregarEvento">
             GUARDAR EVENTO
+          </button>
+          <button type="reset" class="btn-action cancel" @click="goHome">
+            CANCELAR
           </button>
         </div>
       </form>
@@ -75,157 +86,177 @@ function agregarEvento() {
   </main>
 </template>
 
-<style>
-
-    body {
+<style scoped>
+body {
   font-family: "Segoe UI", Arial, sans-serif;
-  background-color: #131a27;
+  background-color: #f7f7f7;
   margin: 0;
   padding: 0;
 }
 
+.app-header {
+  background-color: #3b82f6;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
 
+.logo {
+  background-color: white;
+  color: #111827;
+  padding: 10px 15px;
+  border-radius: 5px;
+  font-size: 1.3rem;
+  font-weight: bold;
+  cursor: pointer;
+}
 
-    /* ----- HEADER ----- */
-    header {
-      background-color: #3b82f6;
-      color: white;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px 20px;
-      border-bottom: 1px solid #cbd5e1;
-    }
+.perfil {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
 
-    .logo {
-      background-color: white;
-      color: #111827;
-      padding: 15px 25px;
-      border-radius: 15px;
-      font-size: 1.3rem;
-      font-weight: bold;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    }
+.perfil span {
+  color: white;
+  font-weight: 500;
+  padding: 5px 10px;
+}
 
-    .perfil {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
+.perfil .avatar {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  background-color: white;
+  border: 2px solid white;
+}
 
-    .perfil span {
-      background-color: white;
-      color: #374151;
-      padding: 5px 15px;
-      border-radius: 5px;
-      font-weight: 500;
-    }
+.contenedor {
+  padding: 30px;
+  background-color: #f7f7f7;
+  min-height: calc(100vh - 65px);
+}
 
-    .perfil .avatar {
-      width: 60px;
-      height: 60px;
-      border-radius: 50%;
-      background-color: white;
-      border: 2px solid #2563eb;
-    }
+.formulario-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
 
-    /* ----- CONTENEDOR PRINCIPAL ----- */
-    .contenedor {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      background-color: #f9fafb;
-      border: 1px solid #d1d5db;
-      border-radius: 8px;
-      margin: 30px;
-      padding: 30px;
-      gap: 40px;
-    }
+.title-form {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #374151;
+  margin-bottom: 25px;
+  border-bottom: 2px solid #eee;
+  padding-bottom: 10px;
+}
 
-    .formulario {
-      flex: 1;
-    }
+.form-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 30px;
+}
 
-    .formulario h2 {
-      font-size: 1.2rem;
-      font-weight: bold;
-      color: #374151;
-      margin-bottom: 20px;
-    }
+.form-inputs {
+  grid-column: 1 / 2;
+}
 
-    .formulario h2 u {
-      text-underline-offset: 4px;
-    }
+.form-actions {
+  grid-column: 2 / 3;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  padding-top: 15px;
+}
 
-    label {
-      display: block;
-      font-weight: 500;
-      color: #374151;
-      margin-top: 10px;
-      margin-bottom: 4px;
-    }
+label {
+  display: block;
+  font-weight: 600;
+  color: #4a5568;
+  margin-top: 10px;
+  margin-bottom: 5px;
+}
 
-    input, select {
-      width: 100%;
-      padding: 8px;
-      border-radius: 6px;
-      border: 1px solid #9ca3af;
-      margin-bottom: 8px;
-      font-size: 1rem;
-    }
+input,
+select {
+  width: 100%;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+}
 
-    /* ----- PREVISUALIZACIÓN DE EVENTO ----- */
-    .preview {
-      width: 300px;
-      text-align: center;
-      border: 1px solid #9ca3af;
-      padding: 15px;
-      background-color: #f3f4f6;
-      border-radius: 8px;
-    }
+.image-box {
+  width: 100%;
+  height: 180px;
+  background-color: #f0f4f8;
+  border: 2px dashed #93c5fd;
+  border-radius: 6px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 5px;
+  color: #64748b;
+  overflow: hidden;
+}
 
-    .preview .imagen {
-      width: 100%;
-      height: 180px;
-      background-color: white;
-      border: 1px solid #9ca3af;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      margin-bottom: 15px;
-      font-size: 1rem;
-      color: #111827;
-    }
+.btn-subir {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 10px;
+  font-weight: bold;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
 
-    /* ----- BOTONES ----- */
-    .botones {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
+.btn-subir:hover {
+  background-color: #388e3c;
+}
 
-    button {
-      background-color: #bfdbfe;
-      color: #111827;
-      border: 1px solid #9ca3af;
-      border-radius: 8px;
-      padding: 10px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: background-color 0.2s ease;
-    }
+.btn-action {
+  padding: 12px 10px;
+  font-weight: bold;
+  border-radius: 6px;
+  border: none;
+  transition: background-color 0.2s;
+}
 
-    button:hover {
-      background-color: #93c5fd;
-    }
+.btn-action.cancel {
+  background-color: #ef4444;
+  color: white;
+}
 
-    @media (max-width: 900px) {
-      .contenedor {
-        flex-direction: column;
-        align-items: center;
-      }
-      .preview {
-        width: 90%;
-      }
-    }
+.btn-action.cancel:hover {
+  background-color: #dc2626;
+}
+
+.btn-action.save {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.btn-action.save:hover {
+  background-color: #2563eb;
+}
+
+@media (max-width: 768px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .form-inputs,
+  .form-actions {
+    grid-column: 1 / 2;
+  }
+}
 </style>

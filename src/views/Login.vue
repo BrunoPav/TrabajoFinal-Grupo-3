@@ -38,78 +38,87 @@ const login = () => {
 </script>
 
 <style scoped>
-
 .login-container {
-  width: 100vw;
-  height: 100vh;
-  background-color: #f3f3f3;
   display: flex;
   justify-content: center;
   align-items: center;
+  min-height: 100vh;
+  background-color: #3b82f6;
+  padding: 20px;
 }
-
 
 .login-card {
+  width: 100%;
+  max-width: 400px;
   background-color: white;
-  border: 1px solid #ccc;
-  border-radius: 25px;
-  padding: 40px 50px;
-  width: 320px;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
   text-align: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
-
 
 .logo {
-  font-size: 1.8em;
+  font-size: 2rem;
   font-weight: bold;
-  margin-bottom: 10px;
+  color: white;
+  background-color: #3b82f6;
+  padding: 10px 20px;
+  border-radius: 8px;
+  margin-bottom: 25px;
+  display: inline-block;
+  cursor: pointer;
 }
 
-.highlight {
-  text-decoration: underline red;
+.logo .highlight {
+  color: white;
+  text-decoration: none;
 }
 
 
 .welcome {
-  font-size: 1.4em;
-  font-weight: bold;
+  font-size: 1.8rem;
+  color: #1f2937;
   margin-bottom: 30px;
 }
-
 
 .login-form {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 10px;
   text-align: left;
 }
 
 .login-form label {
-  font-weight: 500;
+  text-align: left;
+  font-weight: 600;
+  color: #4b5563;
+  margin-top: 5px;
 }
 
 .login-form input {
   width: 100%;
-  padding: 8px;
-  border: 1px solid #888;
-  border-radius: 4px;
-  font-size: 1em;
+  padding: 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 1rem;
+  margin-bottom: 10px;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
-
 .btn-login {
-  background-color: #d9eaff;
-  border: 1px solid #000;
+  background-color: #10b981;
+  color: white;
+  border: none;
+  padding: 15px;
   border-radius: 8px;
-  padding: 10px;
+  font-size: 1.1rem;
   font-weight: bold;
-  font-size: 1em;
   cursor: pointer;
-  transition: 0.2s;
+  margin-top: 20px;
+  transition: background-color 0.2s;
 }
 
 .btn-login:hover {
-  background-color: #c5e1ff;
+  background-color: #059669;
 }
 </style>

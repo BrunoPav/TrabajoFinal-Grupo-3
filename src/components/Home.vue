@@ -1,44 +1,52 @@
 <template>
   <div class="home-view">
-    <nav class="navbar">
+    <nav class="app-header">
       <div class="nav-container">
         <div class="nav-left">
-          <h1 class="brand">TicketOrt</h1>
+          <h1 class="logo">TicketOrt</h1>
         </div>
         <div class="nav-center">
-          <router-link to="/login" class="nav-btn">Mis compras</router-link>
-          <router-link to="/login" class="nav-btn">Mis Tickets</router-link>
+          <router-link to="/login" class="btn-nav">Mis compras</router-link>
+          <router-link to="/login" class="btn-nav">Mis Tickets</router-link>
         </div>
         <div class="nav-right">
-          <router-link to="/login" class="nav-btn">Iniciar sesión</router-link>
+          <router-link to="/login" class="btn-login-nav">Iniciar sesión</router-link>
         </div>
       </div>
     </nav>
 
-    <div class="event-meta" v-if="eventosGuardados == null || eventosGuardados.length === 0" >
-        <div class="icon">🔍</div>
-        <p>No tienes eventos creados</p>
-        <button class="btn-crear" @click="goABM">CREAR EVENTO</button>
+    <div class="estado-vacio-panel" v-if="eventosGuardados == null || eventosGuardados.length === 0">
+      <div class="estado-vacio-contenido">
+        <span class="icono-busqueda">🔍</span>
+        <p class="mensaje-vacio">No tienes eventos creados</p>
+        <button class="btn-crear-evento" @click="goABM">CREAR EVENTO</button>
+      </div>
     </div>
 
-    <section class="cards" v-else>
-      <article class="card" v-for="event in eventosGuardados" :key="event.id">
-        <div class="card-image">imagen evento</div>
+    <section class="grid-eventos" v-else>
+      <article class="evento-card" v-for="event in eventosGuardados" :key="event.id">
+        <div class="evento-imagen">
+
+        </div>
         <div class="card-body">
+          <h3 class="card-title">{{ event.nombre }}</h3>
           <ul class="event-meta">
-            <li class="title">{{ event.nombre }}</li>
-            <li>Lugar: {{ event.lugar }}</li>
+            <li>Lugar: **{{ event.lugar }}**</li>
             <li>Día: {{ event.dia }}</li>
             <li>Horario: {{ event.horario }}</li>
-            <li>Modalidad: {{ event.modalidad }}</li>
-            <li>Precio: ${{ event.precio }}</li>
+            <li>Modalidad:
+              <span :class="['modalidad-tag', event.modalidad.toLowerCase()]">
+                {{ event.modalidad }}
+              </span>
+            </li>
+            <li>Precio: <strong class="precio-card">${{ event.precio.toLocaleString('es-AR') }}</strong></li>
           </ul>
-          <button class="buy" @click="goComprar(event)">COMPRAR</button>
+          <button class="btn-compra" @click="goComprar(event)">COMPRAR</button>
         </div>
       </article>
 
-      <div class="new-card">
-          <button class="buy" @click="goABM">Nuevo Evento</button>
+      <div class="new-card-placeholder">
+        <button class="btn-crear-evento-pequeño" @click="goABM">Nuevo Evento</button>
       </div>
     </section>
   </div>
@@ -59,17 +67,17 @@ const goLogin = () => router.push('/login')
 const goABM = () => router.push('/organizador/crear')
 
 const goComprar = (event) => {
-  router.push({ name: 'UsuarioHome', query: { id: event.id } })
+  router.push({ name: 'Compra', query: { id: event.id } })
 }
 </script>
 
 <style scoped>
-.navbar {
-  background-color: #3b82f6; 
-  color: #fff;
+.app-header {
+  background-color: #3b82f6;
+  color: white;
   padding: 0.75rem 0;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 30px;
 }
 
 .nav-container {
@@ -79,53 +87,252 @@ const goComprar = (event) => {
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
   gap: 1rem;
-  padding: 0 1.5rem;
+  padding: 0 20px;
 }
 
-.nav-left { display: flex; align-items: center; }
+.nav-left {
+  display: flex;
+  align-items: center;
+}
 
-.brand {
+.logo {
   margin: 0;
   font-size: 1.5rem;
-  font-weight: 700;
-  background: #fff;
-  color: #1f2937;
-  padding: 0.35rem 0.75rem;
-  border-radius: 8px;
+  font-weight: bold;
+  background: white;
+  color: #111827;
+  padding: 8px 15px;
+  border-radius: 5px;
+  cursor: pointer;
 }
 
-.nav-center { display: flex; justify-content: center; gap: 1rem; }
+.nav-center {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
 
-.nav-btn {
-  background: #dbeafe; 
+.btn-nav {
+  background: #bfdbfe;
   color: #1f2937;
   text-decoration: none;
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
+  padding: 8px 15px;
+  border-radius: 6px;
   font-weight: 600;
-  border: 1px solid #93c5fd;
+  transition: background-color 0.2s;
 }
-.nav-btn:hover { background: #bfdbfe; }
 
-.nav-right { display: flex; justify-content: flex-end; align-items: center; gap: 0.75rem; }
-.greeting { background: #eef2ff; color: #1f2937; padding: 0.4rem 0.75rem; border-radius: 6px; }
-.avatar { width: 56px; height: 56px; border-radius: 50%; background: #fff; border: 2px solid rgba(0,0,0,0.1); }
+.btn-nav:hover {
+  background: #93c5fd;
+}
 
-.home-view { max-width: 1200px; margin: 0 auto; }
+.nav-right {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
 
-.cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; }
+.btn-login-nav {
+  background-color: #10b981;
+  color: white;
+  text-decoration: none;
+  padding: 8px 15px;
+  border-radius: 6px;
+  font-weight: bold;
+  transition: background-color 0.2s;
+}
 
-.card { background: #f3f4f6; border: 2px solid #cbd5e1; border-radius: 4px; }
-.card-image { height: 140px; background: #ffffff; border-bottom: 2px solid #cbd5e1; display: flex; align-items: center; justify-content: center; color: #6b7280; }
-.card-body { padding: 1rem 1.25rem 1.25rem; }
-.event-meta { list-style: none; padding: 0; margin: 0 0 1rem; color: #4b5563; }
-.event-meta .title { font-size: 1.1rem; color: #1f2937; margin-bottom: 0.5rem; }
-.new-card { display: flex; align-items: center; justify-content: center; background: #e0e7ff; border: 2px dashed #a5b4fc; border-radius: 4px; }
+.btn-login-nav:hover {
+  background-color: #059669;
+}
 
-.buy { width: 180px; display: inline-block; margin-left: auto; background: #93c5fd; border: 1px solid #3b82f6; color: #111827; font-weight: 800; padding: 0.5rem 1rem; border-radius: 6px; }
-.buy:hover { background: #60a5fa; }
+.estado-vacio-panel {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 70vh;
+  max-width: 1200px;
+  margin: 30px auto;
+}
 
-/* Responsive */
-@media (max-width: 1024px) { .cards { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 640px) { .cards { grid-template-columns: 1fr; } }
+.estado-vacio-contenido {
+  text-align: center;
+  padding: 50px;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  max-width: 400px;
+}
+
+.icono-busqueda {
+  font-size: 3rem;
+  color: #9ca3af;
+  display: block;
+  margin-bottom: 10px;
+}
+
+.mensaje-vacio {
+  font-size: 1.5rem;
+  color: #6b7280;
+  margin-bottom: 25px;
+  font-weight: 500;
+}
+
+.btn-crear-evento {
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  padding: 12px 30px;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-crear-evento:hover {
+  background-color: #2563eb;
+}
+
+.home-view {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px 30px 20px;
+}
+
+.grid-eventos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 30px;
+}
+
+.evento-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: transform 0.2s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.evento-card:hover {
+  transform: translateY(-5px);
+}
+
+.evento-imagen {
+  height: 180px;
+  background: #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.card-body {
+  padding: 15px;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.card-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #1f2937;
+  margin: 0 0 10px 0;
+}
+
+.event-meta {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 15px;
+  color: #4b5563;
+  border-top: 1px solid #eee;
+  padding-top: 10px;
+  flex-grow: 1;
+}
+
+.event-meta li {
+  margin-bottom: 5px;
+  font-size: 0.95rem;
+}
+
+.modalidad-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: white;
+}
+
+.modalidad-tag.presencial {
+  background-color: #3b82f6;
+}
+
+.modalidad-tag.virtual {
+  background-color: #10b981;
+}
+
+.precio-card {
+  font-size: 1.1rem;
+  color: #ef4444;
+}
+
+.btn-compra {
+  width: 100%;
+  background: #10b981;
+  border: none;
+  color: white;
+  font-weight: bold;
+  padding: 10px 0;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-compra:hover {
+  background: #059669;
+}
+
+.new-card-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #eef2ff;
+  border: 2px dashed #93c5fd;
+  border-radius: 12px;
+  min-height: 250px;
+}
+
+.btn-crear-evento-pequeño {
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+@media (max-width: 768px) {
+  .nav-container {
+    grid-template-columns: 1fr;
+    justify-content: center;
+  }
+
+  .nav-center {
+    order: 3;
+    margin-top: 10px;
+  }
+
+  .nav-right {
+    order: 2;
+    justify-content: center;
+  }
+}
 </style>
