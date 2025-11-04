@@ -4,10 +4,11 @@ import About from './components/About.vue'
 import TarjetaEvento from './components/TarjetaEvento.vue'
 import Login from './views/Login.vue'
 
-
 import ABMEvento from './views/ABMEvento.vue'
 import CompraView from './views/CompraView.vue'
-
+import { getCurrentScope } from 'vue'
+import Gerente from './views/Gerente.vue'
+import ListaEventos from './views/ListaEventos.vue'
 const routes = [
   { path: '/', component: Home },
   { path: '/about', component: About },
@@ -15,6 +16,8 @@ const routes = [
 
   { path: '/organizador/crear', name: 'OrganizadorCrear', component: ABMEvento },
   { path: '/usuario', name: 'UsuarioHome', component: CompraView },
+  { path: '/gerente', name: 'Gerente', component: Gerente },
+  { path: '/eventos', name: 'ListaEventos', component: ListaEventos },
   {
     path: '/evento-demo',
     name: 'EventoDemo',
