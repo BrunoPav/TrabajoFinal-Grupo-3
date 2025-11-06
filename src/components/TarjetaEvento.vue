@@ -43,6 +43,10 @@ const handleComprar = () => {
           <span class="label">Horario:</span> {{ evento.horario }}
         </li>
         <li>
+          <span class="icon">📝</span>
+          <span class="label">Descripción:</span> {{ evento.descripcion }}
+        </li>
+        <li>
           <span class="icon">🌐</span>
           <span class="label">Modalidad:</span>
           <span :class="['modalidad-tag', evento.modalidad.toLowerCase()]">
@@ -56,7 +60,7 @@ const handleComprar = () => {
       <div class="precio">
         $ {{ evento.precio.toLocaleString('es-AR') }}
       </div>
-      <button class="evento-boton" @click="handleComprar">
+      <button class="evento-boton" @click="handleComprar" v-if="rolStore.rol === 'cliente@a'">
         COMPRAR
       </button>
     </div>

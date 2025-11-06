@@ -20,20 +20,24 @@
 <script setup>
 import { ref } from "vue";
 import { useRouter, useRoute } from "vue-router";
+import { useRolStore } from "../stores/rolStore";
+
 const router = useRouter()
 const route = useRoute()
 const goHome = () => router.push('/')
 
+const rolStore = useRolStore()
+
 const email = ref("");
 const password = ref("");
 
+
 const login = () => {
-  const redirect = route.query.redirect
-  if (redirect && typeof redirect === 'string') {
-    router.push(redirect)
-  } else {
-    router.push('/')
-  }
+  const loginRol = (email.value === 'cliente@a') ? 'cliente@a' :
+                 (email.value === 'organizador@a') ? 'organizador@a' :
+                 (email.value === 'gerente@a') ? 'gerente@a' : 'cliente@a';
+  rolStore.setRol(loginRol);
+  router.push('/')
 }
 </script>
 

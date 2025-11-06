@@ -1,7 +1,7 @@
 <template>
 
   <header class="app-header">
-    <div class="logo">TicketOrt</div>
+    <div class="logo" @click="goHome">TicketOrt</div>
 
     <div class="nav-buttons">
       <button class="btn-mis-tickets">Mis Tickets</button>
@@ -34,9 +34,7 @@
 
     <div class="descripcion-box">
       <h3 class="desc-title">DESCRIPCIÓN</h3>
-      <p class="desc-text">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur sit amet elit at lacus
-        gravida tincidunt. Sed euismod, purus at fringilla lacinia, elit elit bibendum turpis, vel bibendum dolor ipsum
-        vel magna. Aliquam erat volutpat.</p>
+      <p class="desc-text">{{ evento?.descripcion || 'Descripción del evento' }}</p>
     </div>
 
 
@@ -81,6 +79,7 @@ import { useEventoStore } from '../stores/eventoStore'
 const route = useRoute()
 const router = useRouter()
 const eventoStore = useEventoStore()
+const goHome = () => router.push('/')
 
 const id = computed(() => Number(route.query.id))
 const evento = computed(() => eventoStore.eventos.find(e => e.id === id.value))

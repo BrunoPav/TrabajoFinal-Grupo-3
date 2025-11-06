@@ -1,16 +1,21 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
-export const useEventoStore = defineStore('eventoStore', () => {
+export const useEventoStore = defineStore('eventoStore', () => { // Nombre del store 'eventoStore'
   // Array reactivo de eventos guardados
   const eventos = ref([])
 
   // Método para agregar un nuevo evento
-  const agregarEvento = (nuevoEvento) => {
-   
+  const agregarEvento = (nuevoEvento) => {   
     nuevoEvento.id = eventos.value.length + 1;
      eventos.value.push({ ...nuevoEvento })
   }
-
-  return { eventos, agregarEvento }
+  
+  const actualizarEvento = (eventoActualizado) => {
+  const index = eventos.value.findIndex(e => e.id === eventoActualizado.id)
+  if (index !== -1) {
+    eventos.value[index] = { ...eventoActualizado }
+  }
+  }
+  return { eventos, agregarEvento, actualizarEvento }
 })

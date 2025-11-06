@@ -1,9 +1,10 @@
 <script setup>
 import { ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter,useRoute } from 'vue-router';
 import { useEventoStore } from '../stores/eventoStore';
 
 const router = useRouter()
+const route = useRoute()
 const goHome = () => router.push('/')
 
 const eventoStore = useEventoStore()
@@ -15,13 +16,23 @@ const evento = ref({
   horario: '',
   modalidad: '',
   precio: 0,
+  descripcion: '',
   imagen: ''
 })
 
+
+
 function agregarEvento() {
-  eventoStore.agregarEvento({ ...evento.value })
+  if (route.query.id) {
+    eventoStore.actualizarEvento(evento.value)
+  } else {
+  eventoStore.agregarEvento({ ...evento.value })//agrega el evento al store con el metodo agregarEvento definido en eventoStore.js
+  }
   router.push('/')//vuelve al home
+  
 }
+
+
 
 </script>
 
@@ -61,6 +72,9 @@ function agregarEvento() {
             <option>Virtual</option>
           </select>
 
+          <label>Descripción:</label>
+          <textarea v-model="evento.descripcion" placeholder="Descripción del evento" required></textarea>
+
           <label>Precio:</label>
           <input v-model.number="evento.precio" type="number" min="0" placeholder="Ej: 1500" required />
         </div>
@@ -70,7 +84,7 @@ function agregarEvento() {
             <span>Imagen evento</span>
           </div>
 
-          <button type="button" class="btn-subir">
+          <button type="button" class="btn-subir" @click="subirImagen">
             SUBIR IMAGEN
           </button>
 
@@ -84,9 +98,9 @@ function agregarEvento() {
       </form>
     </section>
   </main>
-</template>
+ </template>
 
-<style scoped>
+ <style scoped>
 body {
   font-family: "Segoe UI", Arial, sans-serif;
   background-color: #f7f7f7;
@@ -259,4 +273,4 @@ select {
     grid-column: 1 / 2;
   }
 }
-</style>
+ </style>
