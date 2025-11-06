@@ -1,3 +1,44 @@
+<script setup>
+import { computed, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { useEventoStore } from '../stores/eventoStore'
+import { useVentaStore } from '../stores/ventaStore'
+
+const route = useRoute()
+const router = useRouter()
+const eventoStore = useEventoStore()
+const goHome = () => router.push('/')
+
+const id = computed(() => Number(route.query.id))
+const evento = computed(() => eventoStore.eventos.find(e => e.id === id.value))
+
+const cantidad = ref(0)
+const inc = () => { cantidad.value++ }
+const dec = () => { if (cantidad.value > 0) cantidad.value-- }
+
+const precio = computed(() => evento.value?.precio ?? 0)
+const precioFmt = computed(() => precio.value.toLocaleString('es-AR'))
+
+const proceed = () => {
+  if (!evento.value) {
+    router.push('/')
+    return
+  }
+  if (cantidad.value <= 0) {
+    alert('Seleccioná al menos 1 entrada')
+    return
+  }
+  const montoTotal = cantidad.value * precio.value
+  // registrar la venta en el store de ventas
+  const ventaStore = useVentaStore()
+  ventaStore.registrarVenta({ eventoId: evento.value.id, cantidad: cantidad.value, monto: montoTotal })
+
+  alert(`Compraste ${cantidad.value} entrada(s) para ${evento.value.nombre} por $${montoTotal.toLocaleString('es-AR')}`)
+  // reset cantidad
+  cantidad.value = 0
+}
+</script>
+
 <template>
 
   <header class="app-header">
@@ -71,46 +112,7 @@
 
 </template>
 
-<script setup>
-import { computed, ref } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { useEventoStore } from '../stores/eventoStore'
-import { useVentaStore } from '../stores/ventaStore'
 
-const route = useRoute()
-const router = useRouter()
-const eventoStore = useEventoStore()
-const goHome = () => router.push('/')
-
-const id = computed(() => Number(route.query.id))
-const evento = computed(() => eventoStore.eventos.find(e => e.id === id.value))
-
-const cantidad = ref(0)
-const inc = () => { cantidad.value++ }
-const dec = () => { if (cantidad.value > 0) cantidad.value-- }
-
-const precio = computed(() => evento.value?.precio ?? 0)
-const precioFmt = computed(() => precio.value.toLocaleString('es-AR'))
-
-const proceed = () => {
-  if (!evento.value) {
-    router.push('/')
-    return
-  }
-  if (cantidad.value <= 0) {
-    alert('Seleccioná al menos 1 entrada')
-    return
-  }
-  const montoTotal = cantidad.value * precio.value
-  // registrar la venta en el store de ventas
-  const ventaStore = useVentaStore()
-  ventaStore.registrarVenta({ eventoId: evento.value.id, cantidad: cantidad.value, monto: montoTotal })
-
-  alert(`Compraste ${cantidad.value} entrada(s) para ${evento.value.nombre} por $${montoTotal.toLocaleString('es-AR')}`)
-  // reset cantidad
-  cantidad.value = 0
-}
-</script>
 
 <style scoped>
 body {

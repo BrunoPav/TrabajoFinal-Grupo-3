@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue';
-import { useRouter,useRoute } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { useEventoStore } from '../stores/eventoStore';
 
 const router = useRouter()
@@ -26,10 +26,10 @@ function agregarEvento() {
   if (route.query.id) {
     eventoStore.actualizarEvento(evento.value)
   } else {
-  eventoStore.agregarEvento({ ...evento.value })//agrega el evento al store con el metodo agregarEvento definido en eventoStore.js
+    eventoStore.agregarEvento({ ...evento.value })//agrega el evento al store con el metodo agregarEvento definido en eventoStore.js
   }
   router.push('/')//vuelve al home
-  
+
 }
 
 
@@ -98,9 +98,9 @@ function agregarEvento() {
       </form>
     </section>
   </main>
- </template>
+</template>
 
- <style scoped>
+<style scoped>
 body {
   font-family: "Segoe UI", Arial, sans-serif;
   background-color: #f7f7f7;
@@ -273,4 +273,4 @@ select {
     grid-column: 1 / 2;
   }
 }
- </style>
+</style>

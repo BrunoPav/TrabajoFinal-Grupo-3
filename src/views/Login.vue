@@ -1,3 +1,27 @@
+<script setup>
+import { ref } from "vue";
+import { useRouter, useRoute } from "vue-router";
+import { useRolStore } from "../stores/rolStore";
+
+const router = useRouter()
+const route = useRoute()
+const goHome = () => router.push('/')
+
+const rolStore = useRolStore()
+
+const email = ref("");
+const password = ref("");
+
+
+const login = () => {
+  const loginRol = (email.value === 'cliente@a') ? 'cliente@a' :
+    (email.value === 'organizador@a') ? 'organizador@a' :
+      (email.value === 'gerente@a') ? 'gerente@a' : 'cliente@a';
+  rolStore.setRol(loginRol);
+  router.push('/')
+}
+</script>
+
 <template>
   <div class="login-container">
     <div class="login-card">
@@ -17,29 +41,7 @@
   </div>
 </template>
 
-<script setup>
-import { ref } from "vue";
-import { useRouter, useRoute } from "vue-router";
-import { useRolStore } from "../stores/rolStore";
 
-const router = useRouter()
-const route = useRoute()
-const goHome = () => router.push('/')
-
-const rolStore = useRolStore()
-
-const email = ref("");
-const password = ref("");
-
-
-const login = () => {
-  const loginRol = (email.value === 'cliente@a') ? 'cliente@a' :
-                 (email.value === 'organizador@a') ? 'organizador@a' :
-                 (email.value === 'gerente@a') ? 'gerente@a' : 'cliente@a';
-  rolStore.setRol(loginRol);
-  router.push('/')
-}
-</script>
 
 <style scoped>
 .login-container {

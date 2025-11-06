@@ -1,3 +1,22 @@
+<script setup>
+import { useRouter } from 'vue-router'
+import { useEventoStore } from '../stores/eventoStore.js'
+import { useRolStore } from '../stores/rolStore.js'
+
+
+const eventoStore = useEventoStore()
+const eventosGuardados = eventoStore.eventos
+const rolStore = useRolStore()
+
+const router = useRouter()
+const goABM = () => router.push('/organizador/crear')
+
+
+const goComprar = (event) => {
+  router.push({ name: 'UsuarioHome', query: { id: event.id } })
+}
+</script>
+
 <template>
   <div class="home-view">
     <nav class="app-header">
@@ -6,8 +25,10 @@
           <h1 class="logo">TicketOrt</h1>
         </div>
         <div class="nav-center" v-if="rolStore.rol === 'cliente@a'">
-          <router-link to="/login" class="btn-nav">Mis compras</router-link>
           <router-link to="/login" class="btn-nav">Mis Tickets</router-link>
+        </div>
+        <div class="nav-center" v-if="rolStore.rol === 'gerente@a'">
+          <router-link to="/gerente" class="btn-nav">Panel Gerencial</router-link>
         </div>
         <div class="nav-right">
           <router-link to="/login" class="btn-login-nav">Iniciar sesión</router-link>
@@ -15,7 +36,8 @@
       </div>
     </nav>
 
-    <div class="estado-vacio-panel" v-if="(eventosGuardados == null || eventosGuardados.length === 0) && (rolStore.rol === 'organizador@a' || rolStore.rol === 'gerente@a')">
+    <div class="estado-vacio-panel"
+      v-if="(eventosGuardados == null || eventosGuardados.length === 0) && (rolStore.rol === 'organizador@a' || rolStore.rol === 'gerente@a')">
       <div class="estado-vacio-contenido">
         <span class="icono-busqueda">🔍</span>
         <p class="mensaje-vacio">No tienes eventos creados</p>
@@ -47,31 +69,12 @@
       </article>
 
       <div class="new-card-placeholder" v-if="rolStore.rol === 'organizador@a' || rolStore.rol === 'gerente@a'">
-        <button class="btn-crear-evento-pequeño" @click="goABM" >Nuevo Evento</button>
+        <button class="btn-crear-evento-pequeño" @click="goABM">Nuevo Evento</button>
       </div>
     </section>
   </div>
 </template>
 
-<script setup>
-import { useRouter } from 'vue-router'
-import { useEventoStore } from '../stores/eventoStore.js'
-import { useRolStore } from '../stores/rolStore.js'
-
-
-const eventoStore = useEventoStore()
-const eventosGuardados = eventoStore.eventos
-const rolStore = useRolStore()
-
-const router = useRouter()
-const goLogin = () => router.push('/login')
-const goABM = () => router.push('/organizador/crear')
-
-
-const goComprar = (event) => {
-  router.push({ name: 'UsuarioHome', query: { id: event.id } })
-}
-</script>
 
 <style scoped>
 .app-header {

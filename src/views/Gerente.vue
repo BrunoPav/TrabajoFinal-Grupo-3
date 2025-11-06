@@ -1,5 +1,10 @@
-
-
+<script setup>
+import VentasPorEventoChart from '../components/VentasPorEventoChart.vue'
+import RecaudacionPorEventoChart from '../components/RecaudacionPorEventoChart.vue'
+import { useEventoStore } from '../stores/eventoStore'
+const eventoStore = useEventoStore()
+// Puedes agregar tu lógica aquí
+</script>
 
 <template>
   <div class="Gerente">
@@ -18,10 +23,10 @@
       </div>
     </nav>
 
-    
-<div class="contenedor">
-  <h2 class="titulo-panel">Dashboard de Ventas y Recaudación</h2>
-</div>
+
+    <div class="contenedor">
+      <h2 class="titulo-panel">Dashboard de Ventas y Recaudación</h2>
+    </div>
 
 
     <!-- Dashboards con títulos -->
@@ -37,14 +42,6 @@
     </div>
   </div>
 </template>
-
-<script setup>
-import VentasPorEventoChart from '../components/VentasPorEventoChart.vue'
-import RecaudacionPorEventoChart from '../components/RecaudacionPorEventoChart.vue'
-import { useEventoStore } from '../stores/eventoStore'
-const eventoStore = useEventoStore()
-// Puedes agregar tu lógica aquí
-</script>
 
 <style scoped>
 body {
@@ -160,11 +157,13 @@ body {
 
 .dashboard-item {
   background-color: #ffffff;
-  padding: 40px 30px; /* 40px arriba y abajo, 30px a los lados */
+  padding: 40px 30px;
+  /* 40px arriba y abajo, 30px a los lados */
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  min-height: 410px; /* altura mínima aumentada en 10px */
-  
+  min-height: 410px;
+  /* altura mínima aumentada en 10px */
+
 }
 
 
@@ -191,5 +190,4 @@ body {
   margin-top: 20px;
   margin-bottom: 30px;
 }
-
 </style>
