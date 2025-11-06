@@ -75,6 +75,7 @@
 import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useEventoStore } from '../stores/eventoStore'
+import { useVentaStore } from '../stores/ventaStore'
 
 const route = useRoute()
 const router = useRouter()
@@ -100,7 +101,14 @@ const proceed = () => {
     alert('Seleccioná al menos 1 entrada')
     return
   }
-  alert(`Compraste ${cantidad.value} entrada(s) para ${evento.value.nombre} por $${(cantidad.value * precio.value).toLocaleString('es-AR')}`)
+  const montoTotal = cantidad.value * precio.value
+  // registrar la venta en el store de ventas
+  const ventaStore = useVentaStore()
+  ventaStore.registrarVenta({ eventoId: evento.value.id, cantidad: cantidad.value, monto: montoTotal })
+
+  alert(`Compraste ${cantidad.value} entrada(s) para ${evento.value.nombre} por $${montoTotal.toLocaleString('es-AR')}`)
+  // reset cantidad
+  cantidad.value = 0
 }
 </script>
 
