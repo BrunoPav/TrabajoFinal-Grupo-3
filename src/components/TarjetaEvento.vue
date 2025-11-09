@@ -1,5 +1,8 @@
 <script setup>
 import { ref, watch, computed } from 'vue';
+import { useRolStore } from '../stores/rolStore';
+
+const rolStore = useRolStore();
 
 const props = defineProps({
   evento: {
@@ -22,8 +25,8 @@ const handleComprar = () => {
   <div class="evento-card">
 
     <div class="evento-imagen">
-      <span v-if="!evento.imagenUrl">Imagen no disponible</span>
-      <img v-else :src="evento.imagenUrl" alt="Imagen del evento" class="preview-img">
+      <span v-if="!evento.imagen">Imagen no disponible</span>
+      <img v-else :src="evento.imagen" alt="Imagen del evento" class="preview-img">
     </div>
 
     <div class="evento-info">
@@ -36,7 +39,7 @@ const handleComprar = () => {
         </li>
         <li>
           <span class="icon">🗓️</span>
-          <span class="label">Día:</span> {{ evento.fecha }}
+          <span class="label">Día:</span> {{ evento.dia }}
         </li>
         <li>
           <span class="icon">🕒</span>

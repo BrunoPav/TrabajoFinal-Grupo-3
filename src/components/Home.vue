@@ -9,7 +9,13 @@ const eventosGuardados = eventoStore.eventos
 const rolStore = useRolStore()
 
 const router = useRouter()
-const goABM = () => router.push('/organizador/crear')
+const goABM = (event = null) => {
+  if (event) {
+    router.push({ path: '/organizador/crear', query: { id: event.id } })
+  } else {
+    router.push('/organizador/crear')
+  }
+}
 
 
 const goComprar = (event) => {
@@ -48,7 +54,8 @@ const goComprar = (event) => {
     <section class="grid-eventos" v-else>
       <article class="evento-card" v-for="event in eventosGuardados" :key="event.id">
         <div class="evento-imagen">
-
+          <span v-if="!event.imagen">Imagen no disponible</span>
+          <img v-else :src="event.imagen" alt="Imagen del evento" class="preview-img">
         </div>
         <div class="card-body">
           <h3 class="card-title">{{ event.nombre }}</h3>
@@ -234,6 +241,13 @@ const goComprar = (event) => {
   justify-content: center;
   color: #6b7280;
   font-size: 0.9rem;
+  overflow: hidden;
+}
+
+.preview-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .card-body {

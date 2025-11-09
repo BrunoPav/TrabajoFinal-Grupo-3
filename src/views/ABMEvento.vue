@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useEventoStore } from '../stores/eventoStore';
 
@@ -20,7 +20,31 @@ const evento = ref({
   imagen: ''
 })
 
+const imagenPreview = ref('')
 
+// Cargar evento si estamos editando
+onMounted(() => {
+  if (route.query.id) {
+    const eventoExistente = eventoStore.eventos.find(e => e.id == route.query.id)
+    if (eventoExistente) {
+      evento.value = { ...eventoExistente }
+      imagenPreview.value = eventoExistente.imagen
+    }
+  }
+})
+
+
+const subirImagen = (event) => {
+  const file = event.target.files[0]
+  if (file) {
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      imagenPreview.value = e.target.result
+      evento.value.imagen = e.target.result
+    }
+    reader.readAsDataURL(file)
+  }
+}
 
 function agregarEvento() {
   if (route.query.id) {
@@ -81,12 +105,16 @@ function agregarEvento() {
 
         <div class="form-actions">
           <div class="image-box">
-            <span>Imagen evento</span>
+            <template v-if="imagenPreview">
+              <img :src="imagenPreview" alt="Preview del evento" />
+            </template>
+            <template v-else>
+              <span>Imagen evento</span>
+            </template>
           </div>
 
-          <button type="button" class="btn-subir" @click="subirImagen">
-            SUBIR IMAGEN
-          </button>
+          <input type="file" id="imagenUpload" @change="subirImagen" accept="image/*" style="display: none" />
+          <label for="imagenUpload" class="btn-subir">SUBIR IMAGEN</label>
 
           <button type="submit" class="btn-action save" @click="agregarEvento">
             GUARDAR EVENTO
