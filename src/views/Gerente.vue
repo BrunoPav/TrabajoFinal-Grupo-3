@@ -14,7 +14,8 @@ const eventoStore = useEventoStore()
           <router-link to="/" class="logo">TicketOrt</router-link>
         </div>
         <div class="nav-center">
-          <router-link to="/eventos" class="btn-nav">Lista de eventos</router-link>
+         <router-link to="/listausuario" class="btn-nav">Lista de usuarios</router-link>
+         <router-link to="/listausuario" class="btn-nav">Reintegros</router-link>
         </div>
         <div class="perfil">
           <span>Hola, Gerente</span>
@@ -100,8 +101,7 @@ body {
   display: flex;
   justify-content: flex-start;
   gap: 1rem;
-  margin-left: -6cm;
-  justify-content: left;
+  flex-wrap: wrap;
 }
 
 .btn-nav {

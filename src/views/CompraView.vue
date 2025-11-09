@@ -8,6 +8,7 @@ const route = useRoute()
 const router = useRouter()
 const eventoStore = useEventoStore()
 const goHome = () => router.push('/')
+const pagos = () => router.push({ path: '/pagos', query: { id: id.value, cantidad: cantidad.value } })
 
 const id = computed(() => Number(route.query.id))
 const evento = computed(() => eventoStore.eventos.find(e => e.id === id.value))
