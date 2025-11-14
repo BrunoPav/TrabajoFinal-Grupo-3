@@ -60,10 +60,10 @@ const proceed = () => {
     <div class="info-card">
       <h2 class="info-title">Detalles del Evento</h2>
       <p class="info-strong"><strong>{{ evento?.nombre || 'Nombre evento' }}</strong></p>
-      <p class="info-detail">{{ evento?.lugar || 'Lugar' }}</p>
-      <p class="info-detail">{{ evento?.dia || 'Día' }}</p>
-      <p class="info-detail">{{ evento?.horario || 'Horario' }}</p>
-      <p class="info-detail info-modalidad">Modalidad:
+      <p class="info-detail">📍 Lugar: {{ evento?.lugar || 'Lugar' }}</p>
+      <p class="info-detail">🗓️ Día: {{ evento?.dia || 'Día' }}</p>
+      <p class="info-detail">🕒 Horario: {{ evento?.horario || 'Horario' }}</p>
+      <p class="info-detail info-modalidad">🌐 Modalidad:
         <span :class="['tag', evento?.modalidad.toLowerCase()]">
           {{ evento?.modalidad || 'Presencial / Virtual' }}
         </span>
@@ -71,7 +71,8 @@ const proceed = () => {
     </div>
 
     <div class="event-image-box">
-
+      <img v-if="evento?.imagen" :src="evento.imagen" alt="Imagen del Evento" class="event-image">
+      <span v-else>Imagen no disponible</span>
     </div>
 
     <div class="descripcion-box">
@@ -85,7 +86,6 @@ const proceed = () => {
       <table>
         <thead>
           <tr>
-
             <th>Tipo de Ticket</th>
             <th>Valor</th>
             <th>Cantidad</th>
@@ -106,13 +106,13 @@ const proceed = () => {
         </tbody>
       </table>
 
-      <button class="btn-siguiente" @click="proceed">SIGUIENTE (Pagar Total: ${{ (cantidad *
-        precio).toLocaleString('es-AR') }})</button>
+      <button class="btn-siguiente" @click="proceed">
+        SIGUIENTE (Pagar Total: ${{ (cantidad * precio).toLocaleString('es-AR') }})
+      </button>
     </div>
   </main>
 
 </template>
-
 
 
 <style scoped>
@@ -128,16 +128,16 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 20px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 10px 30px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
 }
 
 .logo {
   background-color: white;
   color: #111827;
-  padding: 10px 15px;
-  border-radius: 5px;
-  font-size: 1.3rem;
+  padding: 8px 15px;
+  border-radius: 6px;
+  font-size: 1.4rem;
   font-weight: bold;
   cursor: pointer;
 }
@@ -150,31 +150,31 @@ body {
 
 .perfil span {
   color: white;
-  font-weight: 500;
-  padding: 5px 10px;
+  font-weight: 600;
 }
 
 .perfil .avatar {
-  width: 45px;
-  height: 45px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
-  background-color: white;
+  background-color: #bfdbfe;
   border: 2px solid white;
 }
 
 .btn-mis-tickets {
   background-color: white;
   color: #3b82f6;
-  border: none;
+  border: 2px solid #3b82f6;
   padding: 8px 15px;
-  border-radius: 5px;
+  border-radius: 6px;
   font-weight: bold;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: background-color 0.2s, color 0.2s;
 }
 
 .btn-mis-tickets:hover {
-  background-color: #e5e7eb;
+  background-color: #3b82f6;
+  color: white;
 }
 
 .contenedor-compra {
@@ -183,7 +183,7 @@ body {
   padding: 20px;
   display: grid;
   grid-template-columns: 2fr 1fr;
-  gap: 20px;
+  gap: 25px;
 }
 
 .info-card,
@@ -191,35 +191,35 @@ body {
 .descripcion-box,
 .tickets-box {
   background-color: white;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
 }
 
 .info-card {
   grid-column: 1 / 2;
-  min-height: 250px;
 }
 
 .info-title {
-  font-size: 1.5rem;
-  color: #3b82f6;
-  border-bottom: 2px solid #eee;
+  font-size: 1.7rem;
+  color: #1f2937;
+  border-bottom: 2px solid #e5e7eb;
   padding-bottom: 10px;
-  margin-bottom: 15px;
+  margin-bottom: 20px;
+  font-weight: 700;
 }
 
 .info-strong {
-  font-size: 1.3rem;
-  font-weight: 700;
-  color: #1f2937;
-  margin-bottom: 10px;
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #3b82f6;
+  margin-bottom: 15px;
 }
 
 .info-detail {
-  margin: 8px 0;
+  margin: 10px 0;
   color: #4b5563;
-  font-size: 1rem;
+  font-size: 1.05rem;
 }
 
 .info-modalidad .tag {
@@ -248,7 +248,15 @@ body {
   color: #6b7280;
   font-size: 1.2rem;
   min-height: 250px;
-  background-color: #e5e7eb;
+  background-color: #f3f4f6;
+  overflow: hidden;
+  padding: 0;
+}
+
+.event-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .descripcion-box {
@@ -256,12 +264,13 @@ body {
 }
 
 .desc-title {
-  font-size: 1.2rem;
-  color: #374151;
+  font-size: 1.3rem;
+  color: #1f2937;
   text-transform: uppercase;
-  border-bottom: 1px solid #eee;
+  border-bottom: 2px solid #e5e7eb;
   padding-bottom: 8px;
   margin-bottom: 15px;
+  font-weight: 700;
 }
 
 .desc-text {
@@ -274,9 +283,10 @@ body {
 }
 
 .tickets-box h3 {
-  font-size: 1.4rem;
+  font-size: 1.6rem;
   color: #1f2937;
   margin-bottom: 20px;
+  font-weight: 700;
 }
 
 table {
@@ -286,7 +296,7 @@ table {
   margin-bottom: 20px;
   overflow: hidden;
   border-radius: 8px;
-  border: 1px solid #ddd;
+  border: 1px solid #d1d5db;
 }
 
 th,
@@ -299,20 +309,21 @@ td {
 }
 
 th {
-  background-color: #f0f4f8;
+  background-color: #f9fafb;
   font-weight: 700;
   text-transform: uppercase;
   border-bottom: 2px solid #ddd;
+  color: #1f2937;
 }
 
 td:first-child {
   text-align: left;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .ticket-price {
   font-weight: bold;
-  color: #10b981;
+  color: #ef4444;
 }
 
 .cantidad-control {
@@ -334,21 +345,21 @@ td:first-child {
 }
 
 .control-btn.minus {
-  background-color: #fca5a5;
-  color: #991b1b;
+  background-color: #fee2e2;
+  color: #b91c1c;
 }
 
 .control-btn.minus:hover {
-  background-color: #f87171;
+  background-color: #fecaca;
 }
 
 .control-btn.plus {
-  background-color: #a7f3d0;
-  color: #065f46;
+  background-color: #d1fae5;
+  color: #047857;
 }
 
 .control-btn.plus:hover {
-  background-color: #6ee7b7;
+  background-color: #a7f3d0;
 }
 
 .cantidad-valor {
@@ -359,26 +370,29 @@ td:first-child {
 .btn-siguiente {
   display: block;
   width: 100%;
-  max-width: 400px;
-  margin: 20px auto 0;
-  padding: 15px 20px;
-  background-color: #3b82f6;
+  max-width: 450px;
+  margin: 30px auto 0;
+  padding: 18px 20px;
+  background-color: #10b981;
   color: white;
-  font-weight: bold;
-  font-size: 1.1rem;
+  font-weight: 800;
+  font-size: 1.2rem;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   cursor: pointer;
   transition: background-color 0.2s ease;
+  box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
 }
 
 .btn-siguiente:hover {
-  background-color: #2563eb;
+  background-color: #059669;
+  box-shadow: 0 6px 15px rgba(5, 150, 105, 0.4);
 }
 
 @media (max-width: 768px) {
   .contenedor-compra {
     grid-template-columns: 1fr;
+    gap: 20px;
   }
 
   .info-card,
