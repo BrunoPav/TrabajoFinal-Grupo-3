@@ -2,12 +2,16 @@
 import { useRouter } from 'vue-router'
 import { useEventoStore } from '../stores/eventoStore.js'
 import { useRolStore } from '../stores/rolStore.js'
-
+import { onMounted, computed } from 'vue'
 
 const eventoStore = useEventoStore()
-eventoStore.cargarEventos()
-const eventosGuardados = eventoStore.eventos
 const rolStore = useRolStore()
+
+onMounted(async () => {
+  try { await eventoStore.cargarEventos() } catch (e) { console.error(e) }
+})
+
+const eventosGuardados = computed(() => eventoStore.eventos)
 
 const router = useRouter()
 const goABM = (event = null) => {
@@ -96,37 +100,46 @@ const goComprar = (event) => {
     margin-bottom: 30px;
 }
 
+/* Nav: usar flex para desktop limpio */
 .nav-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
-    align-items: center;
-    gap: 1rem;
-    padding: 0 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+.nav-left { display:flex; align-items:center; }
+.nav-center { display:flex; gap:12px; }
+.nav-right { display:flex; align-items:center; }
+
+/* Contenedor principal sin min-width forzada */
+.home-view {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px 48px;
 }
 
-.nav-left {
-    display: flex;
-    align-items: center;
-}
+/* Estado vacío: ajustar altura y sombras suaves */
+.estado-vacio-panel { height: 60vh; }
+.estado-vacio-contenido { padding:40px; }
 
-.logo {
-    margin: 0;
-    font-size: 1.5rem;
-    font-weight: bold;
-    background: white;
-    color: #111827;
-    padding: 8px 15px;
-    border-radius: 5px;
-    cursor: pointer;
+/* Tarjetas */
+.grid-eventos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
+  margin-top: 8px;
 }
+.evento-card { transition: box-shadow .25s ease, transform .25s ease; }
+.evento-card:hover { transform: translateY(-4px); box-shadow: 0 6px 18px rgba(0,0,0,.12); }
+.evento-imagen { height: 160px; }
+.card-title { font-size:1.2rem; }
+.event-meta { font-size:.9rem; }
+.btn-compra, .btn-gestion { margin-top:auto; }
 
-.nav-center {
-    display: flex;
-    justify-content: center;
-    gap: 1rem;
-}
+.new-card-placeholder { min-height:160px; }
 
 .btn-nav {
     background: #bfdbfe;
@@ -140,12 +153,6 @@ const goComprar = (event) => {
 
 .btn-nav:hover {
     background: #93c5fd;
-}
-
-.nav-right {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
 }
 
 .btn-login-nav {
@@ -215,6 +222,7 @@ const goComprar = (event) => {
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 20px 30px 20px;
+    min-width: 1024px;
 }
 
 .grid-eventos {
@@ -358,20 +366,31 @@ const goComprar = (event) => {
     transition: background-color 0.2s;
 }
 
-@media (max-width: 768px) {
-    .nav-container {
-        grid-template-columns: 1fr;
-        justify-content: center;
-    }
+/* Forzar vista de escritorio por defecto */
+/* .home-view {
+  min-width: 1024px;
+}
+.nav-container {
+  min-width: 1024px;
+} */
 
-    .nav-center {
-        order: 3;
-        margin-top: 10px;
-    }
-
-    .nav-right {
-        order: 2;
-        justify-content: center;
-    }
+/* Mantener comportamiento móvil solo en pantallas muy pequeñas */
+@media (max-width: 600px) {
+  .nav-container {
+    grid-template-columns: 1fr;
+    justify-content: center;
+  }
+  .nav-center {
+    order: 3;
+    margin-top: 10px;
+  }
+  .nav-right {
+    order: 2;
+    justify-content: center;
+  }
+}
+@media (max-width: 900px) {
+  .nav-container { flex-wrap: wrap; }
+  .nav-center { order:3; width:100%; justify-content:center; margin-top:8px; }
 }
 </style>
