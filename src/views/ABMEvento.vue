@@ -50,7 +50,7 @@ const agregarEvento = async () => {
   if (route.query.id) {
     await eventoStore.actualizarEvento(evento.value) // hace PUT en MockAPI
   } else {
-<<<<<<< HEAD
+
     await eventoStore.agregarEvento({ ...evento.value }) // hace POST en MockAPI
   }
   router.push('/')
@@ -58,14 +58,6 @@ const agregarEvento = async () => {
 
 
 
-
-=======
-    eventoStore.agregarEvento({ ...evento.value })
-  }
-  router.push('/')
-
-}
->>>>>>> 38f56db83e7167e67a4370e5d43119d8d5aede8c
 </script>
 
 <template>
