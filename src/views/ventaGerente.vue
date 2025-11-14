@@ -1,5 +1,3 @@
-
-
 <script setup>
 import { computed, onMounted } from 'vue'
 import { useEventoStore } from '../stores/eventoStore'
@@ -57,7 +55,6 @@ const eventoSeleccionado = computed(() => {
     </div>
 
     <div class="dashboard-container">
-      <!-- Panel de Evento -->
       <div class="dashboard-item evento-panel">
         <h3 class="dashboard-titulo">Evento</h3>
         <div class="tarjetas-evento">
@@ -68,7 +65,6 @@ const eventoSeleccionado = computed(() => {
         </div>
       </div>
 
-      <!-- Panel de Ventas -->
       <div class="dashboard-item ventas-panel">
         <h3 class="dashboard-titulo">Resumen del Evento</h3>
         <div class="info-card">
@@ -111,7 +107,6 @@ body {
   padding: 0;
 }
 
-
 .app-header {
   background-color: #3b82f6;
   color: white;
@@ -124,9 +119,6 @@ body {
   margin-right: auto;
 }
 
-
-
-
 .nav-container {
   width: 100%;
   max-width: 1200px;
@@ -138,8 +130,6 @@ body {
   padding: 0 20px;
   box-sizing: border-box;
 }
-
-
 
 .nav-left {
   display: flex;
@@ -156,14 +146,12 @@ body {
   cursor: pointer;
 }
 
-
 .nav-center {
   display: flex;
   justify-content: center;
   gap: 1rem; 
   flex-wrap: wrap; 
 }
-
 
 .btn-nav {
   background: #bfdbfe;
@@ -174,8 +162,6 @@ body {
   font-weight: 600;
   transition: background-color 0.2s;
 }
-
-
 
 .btn-nav:hover {
   background: #93c5fd;
@@ -203,7 +189,6 @@ body {
   border: 2px solid white;
 }
 
-/* Contenedor principal */
 .contenedor {
   padding: 30px;
   text-align: center;
@@ -216,7 +201,6 @@ body {
   margin-bottom: 20px;
 }
 
-/* Dashboard */
 .dashboard-container {
   display: flex;
   flex-direction: row;
@@ -249,14 +233,12 @@ body {
   margin-bottom: 15px;
 }
 
-/* Tarjetas de evento */
 .tarjetas-evento {
   display: flex;
   flex-direction: column;
   gap: 20px;
 }
 
-/* Responsive */
 @media (max-width: 768px) {
   .dashboard-container {
     flex-direction: column;

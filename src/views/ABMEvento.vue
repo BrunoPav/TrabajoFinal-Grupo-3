@@ -50,6 +50,7 @@ const agregarEvento = async () => {
   if (route.query.id) {
     await eventoStore.actualizarEvento(evento.value) // hace PUT en MockAPI
   } else {
+<<<<<<< HEAD
     await eventoStore.agregarEvento({ ...evento.value }) // hace POST en MockAPI
   }
   router.push('/')
@@ -58,6 +59,13 @@ const agregarEvento = async () => {
 
 
 
+=======
+    eventoStore.agregarEvento({ ...evento.value })
+  }
+  router.push('/')
+
+}
+>>>>>>> 38f56db83e7167e67a4370e5d43119d8d5aede8c
 </script>
 
 <template>
@@ -72,7 +80,9 @@ const agregarEvento = async () => {
 
   <main class="contenedor">
     <section class="formulario-container">
-      <h2 class="title-form">Completa el Formulario</h2>
+      <h2 class="title-form">
+        {{ route.query.id ? 'Editar Evento' : 'Crear Nuevo Evento' }}
+      </h2>
 
       <form @submit.prevent="agregarEvento()" class="form-grid">
 
@@ -97,7 +107,8 @@ const agregarEvento = async () => {
           </select>
 
           <label>Descripción:</label>
-          <textarea v-model="evento.descripcion" placeholder="Descripción del evento" required></textarea>
+          <textarea v-model="evento.descripcion" class="form-textarea" placeholder="Descripción del evento"
+            required></textarea>
 
           <label>Precio:</label>
           <input v-model.number="evento.precio" type="number" min="0" placeholder="Ej: 1500" required />
@@ -117,7 +128,7 @@ const agregarEvento = async () => {
           <label for="imagenUpload" class="btn-subir">SUBIR IMAGEN</label>
 
           <button type="submit" class="btn-action save" @click="agregarEvento">
-            GUARDAR EVENTO
+            {{ route.query.id ? 'ACTUALIZAR EVENTO' : 'GUARDAR EVENTO' }}
           </button>
           <button type="reset" class="btn-action cancel" @click="goHome">
             CANCELAR
@@ -129,53 +140,6 @@ const agregarEvento = async () => {
 </template>
 
 <style scoped>
-body {
-  font-family: "Segoe UI", Arial, sans-serif;
-  background-color: #f7f7f7;
-  margin: 0;
-  padding: 0;
-}
-
-.app-header {
-  background-color: #3b82f6;
-  color: white;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 20px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.logo {
-  background-color: white;
-  color: #111827;
-  padding: 10px 15px;
-  border-radius: 5px;
-  font-size: 1.3rem;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-.perfil {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.perfil span {
-  color: white;
-  font-weight: 500;
-  padding: 5px 10px;
-}
-
-.perfil .avatar {
-  width: 45px;
-  height: 45px;
-  border-radius: 50%;
-  background-color: white;
-  border: 2px solid white;
-}
-
 .contenedor {
   padding: 30px;
   background-color: #f7f7f7;
@@ -185,25 +149,64 @@ body {
 .formulario-container {
   max-width: 1000px;
   margin: 0 auto;
-  padding: 20px;
+  padding: 30px;
   background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  border-radius: 12px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
 }
 
 .title-form {
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: #374151;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1f2937;
   margin-bottom: 25px;
-  border-bottom: 2px solid #eee;
+  border-bottom: 2px solid #e5e7eb;
   padding-bottom: 10px;
+}
+
+.app-header {
+  background-color: #3b82f6;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 30px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+}
+
+.logo {
+  background-color: white;
+  color: #111827;
+  padding: 8px 15px;
+  border-radius: 6px;
+  font-size: 1.4rem;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.perfil span {
+  color: white;
+  font-weight: 600;
+  padding: 5px 10px;
+}
+
+.perfil .avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #bfdbfe;
+  border: 3px solid white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: #3b82f6;
 }
 
 .form-grid {
   display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 30px;
+  grid-template-columns: 3fr 1fr;
+  gap: 40px;
 }
 
 .form-inputs {
@@ -214,62 +217,86 @@ body {
   grid-column: 2 / 3;
   display: flex;
   flex-direction: column;
-  gap: 15px;
-  padding-top: 15px;
+  gap: 20px;
+  padding-top: 5px;
 }
 
 label {
   display: block;
-  font-weight: 600;
-  color: #4a5568;
-  margin-top: 10px;
+  font-weight: 700;
+  color: #1f2937;
+  margin-top: 15px;
   margin-bottom: 5px;
 }
 
 input,
-select {
+select,
+textarea {
   width: 100%;
-  padding: 10px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
   font-size: 1rem;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.03);
+  transition: border-color 0.2s;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: #3b82f6;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+}
+
+textarea {
+  resize: vertical;
+  min-height: 100px;
 }
 
 .image-box {
   width: 100%;
-  height: 180px;
-  background-color: #f0f4f8;
-  border: 2px dashed #93c5fd;
-  border-radius: 6px;
+  height: 220px;
+  background-color: #eef2ff;
+  border: 2px dashed #60a5fa;
+  border-radius: 8px;
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-bottom: 5px;
+  margin-bottom: 10px;
   color: #64748b;
   overflow: hidden;
 }
 
+.image-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 .btn-subir {
-  background-color: #4CAF50;
+  background-color: #10b981;
   color: white;
   border: none;
-  padding: 10px;
+  padding: 12px;
   font-weight: bold;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
+  text-align: center;
   transition: background-color 0.2s ease;
 }
 
 .btn-subir:hover {
-  background-color: #388e3c;
+  background-color: #059669;
 }
 
 .btn-action {
-  padding: 12px 10px;
+  padding: 14px 10px;
   font-weight: bold;
-  border-radius: 6px;
+  border-radius: 8px;
   border: none;
+  font-size: 1rem;
+  cursor: pointer;
   transition: background-color 0.2s;
 }
 

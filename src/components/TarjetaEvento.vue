@@ -20,7 +20,6 @@ const handleComprar = () => {
 }
 </script>
 
-
 <template>
   <div class="evento-card">
 
@@ -32,7 +31,7 @@ const handleComprar = () => {
     <div class="evento-info">
       <h3 class="card-title">{{ evento.nombre }}</h3>
 
-      <ul>
+      <ul class="meta-list">
         <li>
           <span class="icon">📍</span>
           <span class="label">Lugar:</span> {{ evento.lugar }}
@@ -61,7 +60,7 @@ const handleComprar = () => {
 
     <div class="card-footer">
       <div class="precio">
-        $ {{ evento.precio.toLocaleString('es-AR') }}
+        <span class="moneda">$</span>{{ evento.precio.toLocaleString('es-AR') }}
       </div>
       <button class="evento-boton" @click="handleComprar" v-if="rolStore.rol === 'cliente@a'">
         COMPRAR
@@ -69,7 +68,6 @@ const handleComprar = () => {
     </div>
   </div>
 </template>
-
 
 <style scoped>
 .evento-card {
@@ -119,11 +117,11 @@ const handleComprar = () => {
   line-height: 1.2;
 }
 
-.evento-info ul {
+.meta-list {
   list-style: none;
   padding: 0;
   margin: 0;
-  border-top: 1px solid #eee;
+  border-top: 1px solid #e5e7eb;
   padding-top: 10px;
 }
 
@@ -132,12 +130,12 @@ const handleComprar = () => {
   align-items: center;
   font-size: 0.95rem;
   color: #4b5563;
-  margin-bottom: 5px;
+  margin-bottom: 8px;
 }
 
 .evento-info .icon {
-  margin-right: 8px;
-  font-size: 1.1rem;
+  margin-right: 10px;
+  font-size: 1.2rem;
   line-height: 1;
 }
 
@@ -170,12 +168,21 @@ const handleComprar = () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  background-color: #f9fafb;
 }
 
 .precio {
-  font-size: 1.6rem;
-  font-weight: bold;
+  font-size: 1.8rem;
+  font-weight: 800;
   color: #ef4444;
+  display: flex;
+  align-items: baseline;
+}
+
+.precio .moneda {
+  font-size: 1.2rem;
+  margin-right: 3px;
+  opacity: 0.7;
 }
 
 .evento-boton {

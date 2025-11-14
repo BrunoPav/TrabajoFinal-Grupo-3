@@ -1,6 +1,5 @@
-
 <template>
-  <div>
+  <div class="grafico-container">
     <canvas id="graficoVentas"></canvas>
   </div>
 </template>
@@ -22,6 +21,15 @@ export default {
       const datos = await response.json();
       const eventos = datos.eventos;
 
+      // ✅ Mapa de colores por nombre de evento (usando los colores de la app)
+      const mapaColores = {
+        'Concierto Rock': '#ef4444', // Rojo
+        'Feria de Libros': '#3b82f6', // Azul
+        'Evento 1': '#ef4444',
+        'Evento 2': '#10b981', // Verde
+        'Evento 3': '#f59e0b', // Naranja
+      };
+
       // ✅ Mostrar totales por evento en consola
       eventos.forEach(evento => {
         console.log(`Evento: ${evento.nombre}`);
@@ -32,14 +40,15 @@ export default {
       const etiquetas = eventos.map(item => item.nombre);
       const ventas = eventos.map(item => item.entradasVendidas);
 
-      // ✅ Colores personalizados por evento
-      const colores = [
-        'rgba(255, 99, 132, 0.6)',
-        'rgba(54, 162, 235, 0.6)',
+      // ✅ Asignar colores según el nombre del evento
+      const coloresPorEvento = eventos.map(item => {
+        return mapaColores[item.nombre] || '#9ca3af'; // color gris si no está definido
+      });
 
-      ];
+      const bordesPorEvento = eventos.map(item => {
+        return coloresPorEvento[eventos.indexOf(item)];
+      });
 
-      const coloresPorEvento = eventos.map((_, index) => colores[index % colores.length]);
 
       const ctx = document.getElementById('graficoVentas').getContext('2d');
       new Chart(ctx, {
@@ -49,27 +58,47 @@ export default {
           datasets: [{
             label: 'Entradas Vendidas',
             data: ventas,
-            backgroundColor: coloresPorEvento,
+            backgroundColor: coloresPorEvento.map(color => color + 'b3'), // 70% opacidad
             borderColor: coloresPorEvento,
-            borderWidth: 1
+            borderWidth: 2
           }]
         },
         options: {
           responsive: true,
+          maintainAspectRatio: false,
           scales: {
             y: {
-              beginAtZero: true
+              beginAtZero: true,
+              grid: {
+                color: '#f3f4f6' // Líneas de cuadrícula sutiles
+              }
+            },
+            x: {
+              grid: {
+                display: false
+              }
             }
           },
           plugins: {
+            legend: {
+              display: false // Ocultar leyenda
+            },
+            title: {
+              display: true,
+              text: 'Entradas Vendidas por Evento',
+              font: {
+                size: 16,
+                weight: 'bold'
+              },
+              color: '#1f2937'
+            },
             tooltip: {
+              backgroundColor: 'rgba(31, 41, 55, 0.9)',
+              titleColor: '#fff',
               callbacks: {
-                label: function(context) {
-                  const index = context.dataIndex;
-                  const evento = eventos[index];
-                  return [
-                    `Entradas: ${evento.entradasVendidas}`,
-                  ];
+                label: function (context) {
+                  const valor = context.parsed.y.toLocaleString('es-AR');
+                  return ` Entradas Vendidas: ${valor}`;
                 }
               }
             }
@@ -82,3 +111,16 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+/* Contenedor del gráfico para darle un margen y fondo limpio */
+.grafico-container {
+  width: 100%;
+  height: 400px;
+  /* Altura fija para el gráfico */
+  padding: 20px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+</style>
