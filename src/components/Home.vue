@@ -5,6 +5,7 @@ import { useRolStore } from '../stores/rolStore.js'
 
 
 const eventoStore = useEventoStore()
+eventoStore.cargarEventos()
 const eventosGuardados = eventoStore.eventos
 const rolStore = useRolStore()
 

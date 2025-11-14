@@ -22,7 +22,7 @@ const evento = ref({
 
 const imagenPreview = ref('')
 
-// Cargar evento si estamos editando
+
 onMounted(() => {
   if (route.query.id) {
     const eventoExistente = eventoStore.eventos.find(e => e.id == route.query.id)
@@ -46,15 +46,15 @@ const subirImagen = (event) => {
   }
 }
 
-function agregarEvento() {
+const agregarEvento = async () => {
   if (route.query.id) {
-    eventoStore.actualizarEvento(evento.value)
+    await eventoStore.actualizarEvento(evento.value) // hace PUT en MockAPI
   } else {
-    eventoStore.agregarEvento({ ...evento.value })//agrega el evento al store con el metodo agregarEvento definido en eventoStore.js
+    await eventoStore.agregarEvento({ ...evento.value }) // hace POST en MockAPI
   }
-  router.push('/')//vuelve al home
-
+  router.push('/')
 }
+
 
 
 
