@@ -16,7 +16,7 @@ const eventosGuardados = computed(() => eventoStore.eventos)
 const router = useRouter()
 const goABM = (event = null) => {
     if (event) {
-        router.push({ path: '/organizador/crear', query: { id: event.id } })
+        router.push({ path:'/organizador/crear', query: { id: event.id } })
     } else {
         router.push('/organizador/crear')
     }

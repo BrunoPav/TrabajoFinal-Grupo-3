@@ -5,8 +5,8 @@ import ABMEvento from './views/ABMEvento.vue'
 import CompraView from './views/CompraView.vue'
 import Gerente from './views/Gerente.vue'
 import Usuarios from './views/ListaUsuarios.vue'
-import Pagos  from './views/Pagos.vue'
-import VentasGerente from './views/ventaGerente.vue'
+import DetalleEvento from './views/detalleEvento.vue';
+
 
 const routes = [
   { path: '/', component: Home },
@@ -15,8 +15,7 @@ const routes = [
   { path: '/usuario', name: 'UsuarioHome', component: CompraView },
   { path: '/gerente', name: 'Gerente', component: Gerente },
   { path: '/listausuario', name: 'Usuarios', component: Usuarios },
-  { path: '/pagos', name: 'Pagos', component: Pagos},
-  { path: '/ventagerente', name: 'VentasGerente', component: VentasGerente}
+  { path: '/gerente/eventos/:id', name: 'DetalleEventoGerente',component: DetalleEvento }
 ]
 
 const router = createRouter({

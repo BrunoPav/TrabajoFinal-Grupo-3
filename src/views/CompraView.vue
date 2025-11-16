@@ -1,13 +1,18 @@
 <script setup>
 import { computed, ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
+import { useRouter } from 'vue-router'  
 import { useEventoStore } from '../stores/eventoStore.js'
 
+const API_TICKETS_URL = 'https://6918dbf29ccba073ee919f1c.mockapi.io/tickets/tickets';
 const route = useRoute()
+const router = useRouter()  
 const eventoStore = useEventoStore()
 const cargando = ref(false)
 const cantidad = ref(1)
 const mensaje = ref('')
+const compraExitosa = ref(false)
+const ticketConfirmado = ref(null)
 
 onMounted(async () => {
   if (!eventoStore.eventos.length) {
@@ -23,60 +28,130 @@ const eventoSeleccionado = computed(() => {
 
 const total = computed(() => Number(eventoSeleccionado.value?.precio || 0) * cantidad.value)
 
-const confirmarCompra = () => {
-  if (!eventoSeleccionado.value) { mensaje.value = 'Evento no disponible.'; return }
-  if (cantidad.value < 1) { mensaje.value = 'Cantidad mínima: 1.'; return }
-  const ticketsPrevios = JSON.parse(localStorage.getItem('tickets') || '[]')
-  ticketsPrevios.push({
-    id: Date.now(),
-    eventoId: eventoSeleccionado.value.id,
-    evento: eventoSeleccionado.value.nombre || ('Evento ' + eventoSeleccionado.value.id),
-    cantidad: cantidad.value,
-    total: total.value,
-    fecha: new Date().toLocaleString('es-AR')
-  })
-  localStorage.setItem('tickets', JSON.stringify(ticketsPrevios))
-  mensaje.value = 'Compra registrada. Ver "Mis Tickets".'
-  cantidad.value = 1
+// Nacho hay que mirar esta funcion!!! Por en el frontend no calcula bien el total hice esta otra forma para ver si podia andar, pero no funciono. 
+//const total = computed(() => {
+    
+//    const precio = eventoSeleccionado.value?.precio || 0;
+  
+  //  return Number(precio) * cantidad.value; 
+//});
+
+
+const confirmarCompra = async () => {
+    if (!eventoSeleccionado.value) { mensaje.value = 'Evento no disponible.'; return }
+    if (cantidad.value < 1) { mensaje.value = 'Cantidad mínima: 1.'; return }
+    
+    mensaje.value = 'Procesando compra...'
+
+    const nuevoTicket = {
+        eventoId: eventoSeleccionado.value.id,
+        evento: eventoSeleccionado.value.nombre || ('Evento ' + eventoSeleccionado.value.id),
+        cantidad: cantidad.value,
+        total: total.value,
+        fecha: new Date().toLocaleString('es-AR'),
+       
+        eventoDetalles: eventoSeleccionado.value 
+    };
+
+    try {
+        const response = await fetch(API_TICKETS_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(nuevoTicket)
+        });
+
+        if (!response.ok) {
+            throw new Error(`Error en la API: ${response.status}`);
+        }
+        
+      
+        const ticketGuardado = await response.json(); 
+        
+       
+        ticketConfirmado.value = ticketGuardado; 
+        compraExitosa.value = true;             
+        
+    } catch (error) {
+        console.error('Error al registrar la compra:', error);
+        mensaje.value = 'Error de conexión. Verifique la URL.';
+    }
 }
+  
+const seguirComprando = () => {
+  
+  router.push({ path: '/' }) 
+}
+
+
 </script>
 
 <template>
-  <div class="compra-wrapper">
-    <h1 class="titulo-compra">Comprar Entradas</h1>
-    <div v-if="cargando" class="estado">Cargando evento...</div>
-    <div v-else-if="!eventoSeleccionado" class="estado">No se encontró el evento. Volvé al Home.</div>
-    <div v-else class="layout">
-      <div class="evento-card-compra">
-        <div class="imagen-box" v-if="eventoSeleccionado.imagen">
-          <img :src="eventoSeleccionado.imagen" :alt="eventoSeleccionado.nombre" />
-        </div>
-        <div class="datos">
-          <h2>{{ eventoSeleccionado.nombre || ('Evento ' + eventoSeleccionado.id) }}</h2>
-          <div class="tags">
-            <span class="tag modalidad" :class="eventoSeleccionado.modalidad.toLowerCase()">{{ eventoSeleccionado.modalidad }}</span>
-            <span class="tag precio">$ {{ eventoSeleccionado.precio }}</span>
-          </div>
-          <p><strong>Lugar:</strong> {{ eventoSeleccionado.lugar }}</p>
-          <p><strong>Día:</strong> {{ eventoSeleccionado.dia }}</p>
-          <p><strong>Horario:</strong> {{ eventoSeleccionado.horario }}</p>
-          <p class="desc"><strong>Descripción:</strong> {{ eventoSeleccionado.descripcion }}</p>
-        </div>
-      </div>
+    <div class="compra-wrapper">
+        <h1 class="titulo-compra">Comprar Entradas</h1>
+        <div v-if="cargando" class="estado">Cargando evento...</div>
+        <div v-else-if="!eventoSeleccionado" class="estado">No se encontró el evento. Volvé al Home.</div>
+        
+        <div v-else class="layout">
+            <div v-if="compraExitosa && ticketConfirmado" class="compra-exitosa">
+                <h1 style="color: white; margin-bottom: 20px;">¡Gracias! Tu compra se ha realizado con éxito.</h1>
+                
+                <div class="resumen-ticket">
+                    <h3>Detalles del Ticket</h3>
+                    <p><strong>Numero de orden:</strong> {{ ticketConfirmado.id }}</p>
+                    
+                    <hr style="margin: 10px 0;">
+                    
+                    <h3>Evento</h3>
+                    <p><strong>Nombre:</strong> {{ ticketConfirmado.eventoDetalles.nombre }}</p>
+                    <p><strong>Lugar:</strong> {{ ticketConfirmado.eventoDetalles.lugar }}</p>
+                    <p><strong>Día:</strong> {{ ticketConfirmado.eventoDetalles.dia }}</p>
+                    
+                    <hr style="margin: 10px 0;">
 
-      <form @submit.prevent="confirmarCompra" class="form-compra">
-        <h3>Seleccioná cantidad</h3>
-        <div class="cantidad-row">
-          <button type="button" @click="cantidad > 1 && (cantidad--)">-</button>
-          <input type="number" min="1" v-model.number="cantidad" />
-          <button type="button" @click="cantidad++">+</button>
-        </div>
-        <p class="total"><strong>Total:</strong> $ {{ total }}</p>
-        <button type="submit" class="btn-confirmar">CONFIRMAR COMPRA</button>
-        <p v-if="mensaje" class="mensaje">{{ mensaje }}</p>
-      </form>
+                    <h3>Resumen de la Transacción</h3>
+                    <p><strong>Cantidad Comprada:</strong> {{ ticketConfirmado.cantidad }}</p>
+                    <p class="total" style="color:blanchedalmond;"><strong>Total Pagado:</strong> ${{ ticketConfirmado.total.toFixed(2) }}</p>
+                    <p class="fecha-compra" style="font-size: 0.9em;">Registrado el: {{ ticketConfirmado.fecha }}</p>
+                </div>
+               <RouterLink to="/" class="btn-seguir-comprando">
+                  <button @click="seguirComprando" class="btn-confirmar" style="background-color: #32a8f0;">Seguir Comprando</button>  
+                </RouterLink>
+               </div>
+
+            
+
+            <template v-else>
+                <div class="evento-card-compra">
+                    <div class="imagen-box" v-if="eventoSeleccionado.imagen">
+                        <img :src="eventoSeleccionado.imagen" :alt="eventoSeleccionado.nombre" />
+                    </div>
+                    <div class="datos">
+                        <h2>{{ eventoSeleccionado.nombre || ('Evento ' + eventoSeleccionado.id) }}</h2>
+                        <div class="tags">
+                            <span class="tag modalidad" :class="eventoSeleccionado.modalidad.toLowerCase()">{{ eventoSeleccionado.modalidad }}</span>
+                            <span class="tag precio">$ {{ eventoSeleccionado.precio }}</span>
+                        </div>
+                        <p><strong>Lugar:</strong> {{ eventoSeleccionado.lugar }}</p>
+                        <p><strong>Día:</strong> {{ eventoSeleccionado.dia }}</p>
+                        <p><strong>Horario:</strong> {{ eventoSeleccionado.horario }}</p>
+                        <p class="desc"><strong>Descripción:</strong> {{ eventoSeleccionado.descripcion }}</p>
+                    </div>
+                </div>
+
+                <form @submit.prevent="confirmarCompra" class="form-compra">
+                    <h3>Seleccioná cantidad</h3>
+                    <div class="cantidad-row">
+                        <button type="button" @click="cantidad > 1 && (cantidad--)">-</button>
+                        <input type="number" min="1" v-model.number="cantidad" />
+                        <button type="button" @click="cantidad++">+</button>
+                    </div>
+                    <p class="total"><strong>Total:</strong> $ {{ total.toFixed(2) }}</p>
+                    <button type="submit" class="btn-confirmar">CONFIRMAR COMPRA</button>
+                    <p v-if="mensaje" class="mensaje">{{ mensaje }}</p>
+                </form>
+            </template>
+            </div>
     </div>
-  </div>
 </template>
 
 <style scoped>
