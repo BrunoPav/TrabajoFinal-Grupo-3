@@ -2,7 +2,7 @@
 import { useRouter } from 'vue-router'
 import { useEventoStore } from '../stores/eventoStore.js'
 import { useRolStore } from '../stores/rolStore.js'
-import { onMounted, computed } from 'vue'
+import { onMounted, computed, ref } from 'vue'
 
 const eventoStore = useEventoStore()
 const rolStore = useRolStore()
@@ -12,6 +12,40 @@ onMounted(async () => {
 })
 
 const eventosGuardados = computed(() => eventoStore.eventos)
+
+const showFiltros = ref(false)
+const search = ref('')
+const minPrecio = ref('')
+const maxPrecio = ref('')
+const modalidad = ref('') 
+const normaliza = (v) => String(v || '').toLowerCase()
+
+const eventosFiltrados = computed(() => {
+  return eventosGuardados.value.filter(e => {
+    if (search.value && search.value.trim() !== '') {
+      if (!normaliza(e.nombre).includes(normaliza(search.value.trim()))) {
+        return false
+      }
+    }
+    
+    const precio = Number(e.precio || 0)
+    if (minPrecio.value !== '' && minPrecio.value !== null) {
+      if (precio < Number(minPrecio.value)) return false
+    }
+    
+    if (maxPrecio.value !== '' && maxPrecio.value !== null) {
+      if (precio > Number(maxPrecio.value)) return false
+    }
+
+    if (modalidad.value && modalidad.value.trim() !== '') {
+      if (normaliza(e.modalidad) !== normaliza(modalidad.value)) {
+        return false
+      }
+    }
+    
+    return true
+  })
+})
 
 const router = useRouter()
 const goABM = (event = null) => {
@@ -42,11 +76,24 @@ const goComprar = (event) => {
                     <router-link to="/gerente" class="btn-nav">Panel Gerencial</router-link>
                 </div>
                 <div class="nav-right">
+                    <button class="btn-nav" @click="showFiltros = !showFiltros">Filtros</button>
                     <router-link to="/login" class="btn-login-nav">Iniciar sesión</router-link>
                 </div>
             </div>
         </nav>
-
+<div v-if="showFiltros" class="filters-bar">
+          <div class="filters-group">
+            <input class="f-input" type="text" v-model="search" placeholder="Buscar por nombre" />
+            <input class="f-input" type="number" min="0" v-model.number="minPrecio" placeholder="Precio mín" />
+            <input class="f-input" type="number" min="0" v-model.number="maxPrecio" placeholder="Precio máx" />
+            <select class="f-input" v-model="modalidad">
+              <option value="">Todas</option>
+              <option value="presencial">Presencial</option>
+              <option value="virtual">Virtual</option>
+            </select>
+          </div>
+        </div>
+        
         <div class="estado-vacio-panel"
             v-if="(eventosGuardados == null || eventosGuardados.length === 0) && (rolStore.rol === 'organizador@a' || rolStore.rol === 'gerente@a')">
             <div class="estado-vacio-contenido">
@@ -57,7 +104,7 @@ const goComprar = (event) => {
         </div>
 
         <section class="grid-eventos" v-else>
-            <article class="evento-card" v-for="event in eventosGuardados" :key="event.id">
+            <article class="evento-card" v-for="event in eventosFiltrados" :key="event.id">
                 <div class="evento-imagen">
                     <span v-if="!event.imagen">Imagen no disponible</span>
                     <img v-else :src="event.imagen" alt="Imagen del evento" class="preview-img">
@@ -365,6 +412,11 @@ const goComprar = (event) => {
     cursor: pointer;
     transition: background-color 0.2s;
 }
+
+.filters-bar { background:#ffffff; border:1px solid #e5e7eb; border-radius:12px; box-shadow:0 6px 16px rgba(0,0,0,.06); padding:12px 16px; margin:-16px 0 16px; }
+.filters-group { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+.f-input { padding:8px 10px; border:1px solid #d1d5db; border-radius:8px; min-width:150px; }
+.btn-clear { background:#ef4444; color:#fff; border:none; padding:8px 12px; border-radius:8px; font-weight:700; cursor:pointer; }
 
 /* Forzar vista de escritorio por defecto */
 /* .home-view {
