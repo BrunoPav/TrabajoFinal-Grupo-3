@@ -48,10 +48,10 @@ const subirImagen = (event) => {
 
 const agregarEvento = async () => {
   if (route.query.id) {
-    await eventoStore.actualizarEvento(evento.value) // hace PUT en MockAPI
+    await eventoStore.actualizarEvento(evento.value) 
   } else {
 
-    await eventoStore.agregarEvento({ ...evento.value }) // hace POST en MockAPI
+    await eventoStore.agregarEvento({ ...evento.value }) 
   }
   router.push('/')
 }

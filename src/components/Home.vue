@@ -2,13 +2,28 @@
 import { useRouter } from 'vue-router'
 import { useEventoStore } from '../stores/eventoStore.js'
 import { useRolStore } from '../stores/rolStore.js'
+import { useUsuarioStore } from '../stores/usuarioStore.js'
 import { onMounted, computed, ref } from 'vue'
 
 const eventoStore = useEventoStore()
 const rolStore = useRolStore()
+const usuarioStore = useUsuarioStore()
+const router = useRouter()
 
 onMounted(async () => {
-  try { await eventoStore.cargarEventos() } catch (e) { console.error(e) }
+
+  await usuarioStore.restaurarSesion()
+
+  if (usuarioStore.estaLogueado) {
+    const rolFormateado = `${usuarioStore.usuarioActual.rol}@a`
+    rolStore.setRol(rolFormateado)
+  }
+
+  try { 
+    await eventoStore.cargarEventos() 
+  } catch (e) { 
+    console.error(e) 
+  }
 })
 
 const eventosGuardados = computed(() => eventoStore.eventos)
@@ -17,28 +32,32 @@ const showFiltros = ref(false)
 const search = ref('')
 const minPrecio = ref('')
 const maxPrecio = ref('')
-const modalidad = ref('') 
+const modalidad = ref('')
+const searchActivo = ref('')
+const minPrecioActivo = ref('')
+const maxPrecioActivo = ref('')
+const modalidadActiva = ref('')
 const normaliza = (v) => String(v || '').toLowerCase()
 
 const eventosFiltrados = computed(() => {
   return eventosGuardados.value.filter(e => {
-    if (search.value && search.value.trim() !== '') {
-      if (!normaliza(e.nombre).includes(normaliza(search.value.trim()))) {
+    if (searchActivo.value && searchActivo.value.trim() !== '') {
+      if (!normaliza(e.nombre).includes(normaliza(searchActivo.value.trim()))) {
         return false
       }
     }
     
     const precio = Number(e.precio || 0)
-    if (minPrecio.value !== '' && minPrecio.value !== null) {
-      if (precio < Number(minPrecio.value)) return false
+    if (minPrecioActivo.value !== '' && minPrecioActivo.value !== null) {
+      if (precio < Number(minPrecioActivo.value)) return false
     }
     
-    if (maxPrecio.value !== '' && maxPrecio.value !== null) {
-      if (precio > Number(maxPrecio.value)) return false
+    if (maxPrecioActivo.value !== '' && maxPrecioActivo.value !== null) {
+      if (precio > Number(maxPrecioActivo.value)) return false
     }
 
-    if (modalidad.value && modalidad.value.trim() !== '') {
-      if (normaliza(e.modalidad) !== normaliza(modalidad.value)) {
+    if (modalidadActiva.value && modalidadActiva.value.trim() !== '') {
+      if (normaliza(e.modalidad) !== normaliza(modalidadActiva.value)) {
         return false
       }
     }
@@ -47,96 +66,174 @@ const eventosFiltrados = computed(() => {
   })
 })
 
-const router = useRouter()
-const goABM = (event = null) => {
-    if (event) {
-        router.push({ path:'/organizador/crear', query: { id: event.id } })
-    } else {
-        router.push('/organizador/crear')
-    }
+const buscar = () => {
+  searchActivo.value = search.value
+  minPrecioActivo.value = minPrecio.value
+  maxPrecioActivo.value = maxPrecio.value
+  modalidadActiva.value = modalidad.value
 }
 
+const limpiarFiltros = () => {
+  search.value = ''
+  minPrecio.value = ''
+  maxPrecio.value = ''
+  modalidad.value = ''
+  searchActivo.value = ''
+  minPrecioActivo.value = ''
+  maxPrecioActivo.value = ''
+  modalidadActiva.value = ''
+}
+
+const goABM = (event = null) => {
+  if (event) {
+    router.push({ path: '/organizador/crear', query: { id: event.id } })
+  } else {
+    router.push('/organizador/crear')
+  }
+}
 
 const goComprar = (event) => {
-    router.push({ name: 'UsuarioHome', query: { id: event.id } })
+  if (!usuarioStore.estaLogueado) {
+    router.push({ 
+      path: '/login', 
+      query: { 
+        redirect: `/usuario?id=${event.id}` 
+      } 
+    })
+    return
+  }
+  router.push({ name: 'UsuarioHome', query: { id: event.id } })
+}
+
+const logout = () => {
+  usuarioStore.logout()
+  rolStore.setRol('cliente@a')
+  router.push('/login')
 }
 </script>
 
 <template>
-    <div class="home-view">
-        <nav class="app-header">
-            <div class="nav-container">
-                <div class="nav-left">
-                    <h1 class="logo">TicketOrt</h1>
-                </div>
-                <div class="nav-center" v-if="rolStore.rol === 'cliente@a'">
-                    <router-link to="/login" class="btn-nav">Mis Tickets</router-link>
-                </div>
-                <div class="nav-center" v-if="rolStore.rol === 'gerente@a'">
-                    <router-link to="/gerente" class="btn-nav">Panel Gerencial</router-link>
-                </div>
-                <div class="nav-right">
-                    <button class="btn-nav" @click="showFiltros = !showFiltros">Filtros</button>
-                    <router-link to="/login" class="btn-login-nav">Iniciar sesión</router-link>
-                </div>
+  <div class="home-view">
+    <nav class="app-header">
+      <div class="nav-container">
+        <div class="nav-left">
+          <h1 class="logo">TicketOrt</h1>
+        </div>
+        
+        <div class="nav-center">
+          <router-link 
+            v-if="usuarioStore.estaLogueado && rolStore.rol === 'cliente@a'" 
+            to="/mis-tickets" 
+            class="btn-nav">
+             Mis Tickets
+          </router-link>
+          
+          <router-link 
+            v-if="rolStore.rol === 'gerente@a'" 
+            to="/gerente" 
+            class="btn-nav">
+            Panel Gerencial
+          </router-link>
+        </div>
+        
+        <div class="nav-right">
+          <router-link 
+            v-if="!usuarioStore.estaLogueado" 
+            to="/login" 
+            class="btn-login-nav">
+            Iniciar sesión
+          </router-link>
+      
+          <div v-else class="usuario-logueado">
+            <span class="nombre-usuario">{{ usuarioStore.usuarioActual.nombre }}</span>
+            <button @click="logout" class="btn-logout">Cerrar sesión</button>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <div class="filters-bar">
+      <div class="filters-group">
+        <input class="f-input" type="text" v-model="search" placeholder="Buscar por nombre" />
+        <input class="f-input" type="number" min="0" v-model.number="minPrecio" placeholder="Precio mín" />
+        <input class="f-input" type="number" min="0" v-model.number="maxPrecio" placeholder="Precio máx" />
+        <select class="f-input" v-model="modalidad">
+          <option value="">Todas</option>
+          <option value="presencial">Presencial</option>
+          <option value="virtual">Virtual</option>
+        </select>
+        <button class="btn-buscar" @click="buscar">Buscar</button>
+        <button class="btn-limpiar" @click="limpiarFiltros">Limpiar</button>
+      </div>
+    </div>
+    
+    <div class="estado-vacio-panel"
+      v-if="(eventosGuardados == null || eventosGuardados.length === 0) && (rolStore.rol === 'organizador@a' || rolStore.rol === 'gerente@a')">
+      <div class="estado-vacio-contenido">
+        <span class="icono-busqueda"></span>
+        <p class="mensaje-vacio">No tienes eventos creados</p>
+        <button class="btn-crear-evento" @click="goABM">CREAR EVENTO</button>
+      </div>
+    </div>
+
+    <section class="grid-eventos" v-else>
+      <div class="new-card-placeholder" v-if="rolStore.rol === 'organizador@a' || rolStore.rol === 'gerente@a'">
+        <button class="btn-crear-evento-pequeño" @click="goABM">Nuevo Evento</button>
+      </div>
+
+      <article class="evento-card" v-for="event in eventosFiltrados" :key="event.id">
+        <div class="card-image">
+          <span v-if="!event.imagen">Imagen no disponible</span>
+          <img v-else :src="event.imagen" alt="Imagen del evento" class="event-img">
+        </div>
+        
+        <div class="card-footer">
+          <div class="event-info">
+            <p class="event-location">{{ event.lugar }}</p>
+            <h3 class="event-title">{{ event.nombre }}</h3>
+          </div>
+          <div class="date-time-info">
+            <div class="date-section">
+              <span class="day">{{ event.dia.split('-')[0] }}</span>
+              <span class="month">{{ 
+                new Date(event.dia.split('-').reverse().join('-')).toLocaleDateString('es-AR', { month: 'short' })
+              }}</span>
+              <span class="year">{{ event.dia.split('-')[2] }}</span>
             </div>
-        </nav>
-<div v-if="showFiltros" class="filters-bar">
-          <div class="filters-group">
-            <input class="f-input" type="text" v-model="search" placeholder="Buscar por nombre" />
-            <input class="f-input" type="number" min="0" v-model.number="minPrecio" placeholder="Precio mín" />
-            <input class="f-input" type="number" min="0" v-model.number="maxPrecio" placeholder="Precio máx" />
-            <select class="f-input" v-model="modalidad">
-              <option value="">Todas</option>
-              <option value="presencial">Presencial</option>
-              <option value="virtual">Virtual</option>
-            </select>
+            <div class="divider"></div>
+            <div class="time-section">
+              <span class="time">{{ event.horario.split(':')[0] }}</span>
+              <span class="time-unit">{{ event.horario.split(':')[1] }}</span>
+              <span class="time-label">hrs</span>
+            </div>
+            <div class="divider"></div>
+            <div class="modalidad-section">
+              <span class="modalidad-label">modalidad</span>
+              <span class="modalidad-text">{{ event.modalidad || 'N/A' }}</span>
+  
+            </div>
           </div>
         </div>
         
-        <div class="estado-vacio-panel"
-            v-if="(eventosGuardados == null || eventosGuardados.length === 0) && (rolStore.rol === 'organizador@a' || rolStore.rol === 'gerente@a')">
-            <div class="estado-vacio-contenido">
-                <span class="icono-busqueda">🔍</span>
-                <p class="mensaje-vacio">No tienes eventos creados</p>
-                <button class="btn-crear-evento" @click="goABM">CREAR EVENTO</button>
-            </div>
+        <div class="card-actions">
+          <button 
+            class="btn-compra" 
+            @click="goComprar(event)"
+            v-if="rolStore.rol === 'cliente@a' || !usuarioStore.estaLogueado">
+            {{ usuarioStore.estaLogueado ? 'COMPRAR' : 'COMPRAR' }}
+          </button>
+          
+          <button 
+            class="btn-gestion" 
+            @click="goABM(event)"
+            v-if="rolStore.rol === 'organizador@a'">
+            EDITAR
+          </button>
         </div>
-
-        <section class="grid-eventos" v-else>
-            <article class="evento-card" v-for="event in eventosFiltrados" :key="event.id">
-                <div class="evento-imagen">
-                    <span v-if="!event.imagen">Imagen no disponible</span>
-                    <img v-else :src="event.imagen" alt="Imagen del evento" class="preview-img">
-                </div>
-                <div class="card-body">
-                    <h3 class="card-title">{{ event.nombre }}</h3>
-                    <ul class="event-meta">
-                        <li>Lugar: **{{ event.lugar }}**</li>
-                        <li>Día: {{ event.dia }}</li>
-                        <li>Horario: {{ event.horario }}</li>
-                        <li>Modalidad:
-                            <span :class="['modalidad-tag', event.modalidad.toLowerCase()]">
-                                {{ event.modalidad }}
-                            </span>
-                        </li>
-                        <li>Precio: <strong class="precio-card">${{ event.precio.toLocaleString('es-AR') }}</strong>
-                        </li>
-                    </ul>
-                    <button class="btn-compra" @click="goComprar(event)"
-                        v-if="rolStore.rol === 'cliente@a'">COMPRAR</button>
-                    <button class="btn-gestion" @click="goABM(event)"
-                        v-if="rolStore.rol === 'organizador@a' || rolStore.rol === 'gerente@a'">EDITAR</button>
-                </div>
-            </article>
-
-            <div class="new-card-placeholder" v-if="rolStore.rol === 'organizador@a' || rolStore.rol === 'gerente@a'">
-                <button class="btn-crear-evento-pequeño" @click="goABM">Nuevo Evento</button>
-            </div>
-        </section>
-    </div>
+      </article>
+    </section>
+  </div>
 </template>
-
 
 <style scoped>
 .app-header {
@@ -147,7 +244,6 @@ const goComprar = (event) => {
     margin-bottom: 30px;
 }
 
-/* Nav: usar flex para desktop limpio */
 .nav-container {
   max-width: 1200px;
   margin: 0 auto;
@@ -161,18 +257,16 @@ const goComprar = (event) => {
 .nav-center { display:flex; gap:12px; }
 .nav-right { display:flex; align-items:center; }
 
-/* Contenedor principal sin min-width forzada */
 .home-view {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 24px 48px;
 }
 
-/* Estado vacío: ajustar altura y sombras suaves */
+
 .estado-vacio-panel { height: 60vh; }
 .estado-vacio-contenido { padding:40px; }
 
-/* Tarjetas */
 .grid-eventos {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -279,21 +373,22 @@ const goComprar = (event) => {
 }
 
 .evento-card {
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    background: #ffffff;
+    border-radius: 15px;
     overflow: hidden;
-    transition: transform 0.2s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
     display: flex;
     flex-direction: column;
 }
 
 .evento-card:hover {
     transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
 }
 
-.evento-imagen {
-    height: 180px;
+.card-image {
+    height: 250px;
     background: #e5e7eb;
     display: flex;
     align-items: center;
@@ -303,61 +398,152 @@ const goComprar = (event) => {
     overflow: hidden;
 }
 
-.preview-img {
+.event-img {
     width: 100%;
     height: 100%;
     object-fit: cover;
 }
 
-.card-body {
-    padding: 15px;
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
+.card-footer {
+    padding: 20px;
+    background: #ffffff;
 }
 
-.card-title {
+.event-info {
+    margin-bottom: 15px;
+}
+
+.event-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.event-location {
+    font-size: 0.85rem;
+    color: #7f8c8d;
+    margin: 0 0 8px 0;
+    font-weight: 500;
+}
+
+.modalidad-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.modalidad-badge.presencial {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.modalidad-badge.virtual {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.event-title {
     font-size: 1.5rem;
     font-weight: bold;
-    color: #1f2937;
-    margin: 0 0 10px 0;
+    color: #2c3e50;
+    margin: 0;
+    line-height: 1.2;
 }
 
-.event-meta {
-    list-style: none;
-    padding: 0;
-    margin: 0 0 15px;
-    color: #4b5563;
-    border-top: 1px solid #eee;
-    padding-top: 10px;
-    flex-grow: 1;
+.date-time-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
 }
 
-.event-meta li {
-    margin-bottom: 5px;
-    font-size: 0.95rem;
+.date-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
-.modalidad-tag {
-    display: inline-block;
-    padding: 2px 8px;
-    border-radius: 10px;
-    font-size: 0.85rem;
-    font-weight: 700;
-    color: white;
+.day {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #2c3e50;
+    line-height: 1;
 }
 
-.modalidad-tag.presencial {
-    background-color: #3b82f6;
+.month {
+    font-size: 0.8rem;
+    color: #7f8c8d;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 2px;
 }
 
-.modalidad-tag.virtual {
-    background-color: #10b981;
+.year {
+    font-size: 0.9rem;
+    color: #7f8c8d;
 }
 
-.precio-card {
-    font-size: 1.1rem;
-    color: #ef4444;
+.divider {
+    width: 1px;
+    height: 40px;
+    background: #e5e7eb;
+}
+
+.time-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.time {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #2c3e50;
+    line-height: 1;
+}
+
+.time-unit {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #2c3e50;
+    line-height: 1;
+    margin-left: -5px;
+}
+
+.time-label {
+    font-size: 0.8rem;
+    color: #7f8c8d;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 2px;
+}
+
+.modalidad-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.modalidad-text {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #2c3e50;
+    line-height: 1;
+    text-transform: capitalize;
+}
+
+.modalidad-label {
+    font-size: 0.8rem;
+    color: #7f8c8d;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 2px;
+}
+
+.card-actions {
+    padding: 0 20px 20px;
 }
 
 .btn-compra {
@@ -366,10 +552,13 @@ const goComprar = (event) => {
     border: none;
     color: white;
     font-weight: bold;
-    padding: 10px 0;
-    border-radius: 6px;
+    padding: 12px 0;
+    border-radius: 8px;
     cursor: pointer;
     transition: background-color 0.2s;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .btn-compra:hover {
@@ -382,10 +571,13 @@ const goComprar = (event) => {
     border: none;
     color: white;
     font-weight: bold;
-    padding: 10px 0;
-    border-radius: 6px;
+    padding: 12px 0;
+    border-radius: 8px;
     cursor: pointer;
     transition: background-color 0.2s;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .btn-gestion:hover {
@@ -413,20 +605,87 @@ const goComprar = (event) => {
     transition: background-color 0.2s;
 }
 
-.filters-bar { background:#ffffff; border:1px solid #e5e7eb; border-radius:12px; box-shadow:0 6px 16px rgba(0,0,0,.06); padding:12px 16px; margin:-16px 0 16px; }
-.filters-group { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
-.f-input { padding:8px 10px; border:1px solid #d1d5db; border-radius:8px; min-width:150px; }
-.btn-clear { background:#ef4444; color:#fff; border:none; padding:8px 12px; border-radius:8px; font-weight:700; cursor:pointer; }
-
-/* Forzar vista de escritorio por defecto */
-/* .home-view {
-  min-width: 1024px;
+.filters-bar { 
+  background:#ffffff; 
+  border:1px solid #e5e7eb; 
+  border-radius:12px; 
+  box-shadow:0 6px 16px rgba(0,0,0,.06); 
+  padding:12px 16px; 
+  margin:-16px 0 16px; 
 }
-.nav-container {
-  min-width: 1024px;
-} */
 
-/* Mantener comportamiento móvil solo en pantallas muy pequeñas */
+.filters-group { 
+  display:flex; 
+  gap:10px; 
+  flex-wrap:wrap; 
+  align-items:center; 
+}
+
+.f-input { 
+  padding:8px 10px; 
+  border:1px solid #d1d5db; 
+  border-radius:8px; 
+  min-width:150px; 
+}
+
+.btn-buscar { 
+  background:#10b981; 
+  color:#fff; 
+  border:none; 
+  padding:8px 12px; 
+  border-radius:8px; 
+  font-weight:700; 
+  cursor:pointer; 
+}
+
+.btn-buscar:hover {
+  background:#059669;
+}
+
+.btn-limpiar { 
+  background:#ef4444; 
+  color:#fff; 
+  border:none; 
+  padding:8px 12px; 
+  border-radius:8px; 
+  font-weight:700; 
+  cursor:pointer; 
+}
+
+.btn-limpiar:hover {
+  background:#dc2626;
+}
+
+.usuario-logueado {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nombre-usuario {
+  color: white;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.btn-logout {
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-logout:hover {
+  background: #dc2626;
+}
+
 @media (max-width: 600px) {
   .nav-container {
     grid-template-columns: 1fr;
@@ -441,8 +700,16 @@ const goComprar = (event) => {
     justify-content: center;
   }
 }
+
 @media (max-width: 900px) {
-  .nav-container { flex-wrap: wrap; }
-  .nav-center { order:3; width:100%; justify-content:center; margin-top:8px; }
+  .nav-container { 
+    flex-wrap: wrap; 
+  }
+  .nav-center { 
+    order:3; 
+    width:100%; 
+    justify-content:center; 
+    margin-top:8px; 
+  }
 }
 </style>

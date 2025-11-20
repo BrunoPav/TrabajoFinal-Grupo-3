@@ -8,11 +8,11 @@ const usuariosListado = computed(() => usuarioStore.usuarios || [])
 const router = useRouter()
 
 const goToDetalle = (user) => {
-  // Navegamos y pasamos el ID del usuario en el Query Parameter (Objeto JS)
+
   router.push({ path: '/usuario-detalle', query: { id: user.id } })
 }
 
-// Función para ir a la vista de creación de usuario
+
 const goToCrearUsuario = () => {
   router.push('/usuario-crear')
 } 

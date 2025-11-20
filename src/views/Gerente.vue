@@ -11,7 +11,7 @@ const router = useRouter()
 const goHome = () => router.push('/')
 const cargandoEventos = ref(false)
 
-// Navegación al detalle del evento
+
 const verDetalle = (id) => {
     router.push({ path: `/gerente/eventos/${id}` }) 
 }

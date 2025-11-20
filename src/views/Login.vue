@@ -1,24 +1,76 @@
 <script setup>
 import { ref } from "vue";
-import { useRouter, useRoute } from "vue-router";
+import { useRouter } from "vue-router";
+import { useUsuarioStore } from "../stores/usuarioStore";
 import { useRolStore } from "../stores/rolStore";
 
 const router = useRouter()
-const route = useRoute()
-const goHome = () => router.push('/')
-
+const usuarioStore = useUsuarioStore()
 const rolStore = useRolStore()
 
 const email = ref("");
 const password = ref("");
+const error = ref("");
+const cargando = ref(false);
+const modoRegistro = ref(false);
+const nombre = ref("");
 
+const goHome = () => router.push('/')
 
-const login = () => {
-  const loginRol = (email.value === 'cliente@a') ? 'cliente@a' :
-    (email.value === 'organizador@a') ? 'organizador@a' :
-      (email.value === 'gerente@a') ? 'gerente@a' : 'cliente@a';
-  rolStore.setRol(loginRol);
-  router.push('/')
+const login = async () => {
+  error.value = "";
+  cargando.value = true;
+  
+  try {
+    const usuario = await usuarioStore.login(email.value, password.value);
+    
+
+    const rolFormateado = `${usuario.rol}@a`; 
+    rolStore.setRol(rolFormateado);
+    
+
+    if (usuario.rol === 'gerente') {
+      router.push('/gerente');
+    } else {
+      router.push('/');
+    }
+  } catch (err) {
+    error.value = err.message || "Error al iniciar sesión. Verifica tus credenciales.";
+  } finally {
+    cargando.value = false;
+  }
+}
+
+const registrar = async () => {
+  error.value = "";
+  
+  if (!nombre.value || !email.value || !password.value) {
+    error.value = "Todos los campos son obligatorios";
+    return;
+  }
+  
+  cargando.value = true;
+  
+  try {
+    await usuarioStore.registrar({
+      nombre: nombre.value,
+      email: email.value,
+      password: password.value,
+      rol: 'cliente' 
+    });
+    
+
+    await login();
+  } catch (err) {
+    error.value = err.message || "Error al registrarse";
+  } finally {
+    cargando.value = false;
+  }
+}
+
+const toggleModo = () => {
+  modoRegistro.value = !modoRegistro.value;
+  error.value = "";
 }
 </script>
 
@@ -26,22 +78,42 @@ const login = () => {
   <div class="login-container">
     <div class="login-card">
       <h1 class="logo" @click="goHome">Ticket<span class="highlight">Ort</span></h1>
-      <h2 class="welcome">Bienvenidos</h2>
+      <h2 class="welcome">{{ modoRegistro ? 'Crear Cuenta' : 'Bienvenidos' }}</h2>
 
-      <form class="login-form" @submit.prevent="login">
-        <label for="email">Ingresa tu Mail</label>
+      <div v-if="error" class="error-message">
+        {{ error }}
+      </div>
+
+      <form class="login-form" @submit.prevent="modoRegistro ? registrar() : login()">
+        <div v-if="modoRegistro">
+          <label for="nombre">Nombre completo</label>
+          <input type="text" id="nombre" v-model="nombre" required />
+        </div>
+
+        <label for="email">Email</label>
         <input type="email" id="email" v-model="email" required />
 
-        <label for="password">Ingresa tu contraseña</label>
+        <label for="password">Contraseña</label>
         <input type="password" id="password" v-model="password" required />
 
-        <button type="submit" class="btn-login">INGRESAR</button>
+        <button type="submit" class="btn-login" :disabled="cargando">
+          {{ cargando ? 'Procesando...' : (modoRegistro ? 'REGISTRARSE' : 'INGRESAR') }}
+        </button>
       </form>
+
+      <div class="toggle-modo">
+        <p v-if="!modoRegistro">
+          ¿No tenés cuenta? 
+          <a @click="toggleModo" class="link-toggle">Registrate aquí</a>
+        </p>
+        <p v-else>
+          ¿Ya tenés cuenta? 
+          <a @click="toggleModo" class="link-toggle">Iniciá sesión</a>
+        </p>
+      </div>
     </div>
   </div>
 </template>
-
-
 
 <style scoped>
 .login-container {

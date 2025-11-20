@@ -1,13 +1,14 @@
 <script setup>
 import { computed, ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
-import { useRouter } from 'vue-router'  
+import { useRoute, useRouter } from 'vue-router'
 import { useEventoStore } from '../stores/eventoStore.js'
+import { useUsuarioStore } from '../stores/usuarioStore.js'
 
-const API_TICKETS_URL = 'https://6918dbf29ccba073ee919f1c.mockapi.io/tickets/tickets';
 const route = useRoute()
-const router = useRouter()  
+const router = useRouter()
 const eventoStore = useEventoStore()
+const usuarioStore = useUsuarioStore()
+
 const cargando = ref(false)
 const cantidad = ref(1)
 const mensaje = ref('')
@@ -15,9 +16,23 @@ const compraExitosa = ref(false)
 const ticketConfirmado = ref(null)
 
 onMounted(async () => {
+  await usuarioStore.restaurarSesion()
+  
+  if (!usuarioStore.estaLogueado) {
+    router.push({ 
+      path: '/login', 
+      query: { redirect: route.fullPath } 
+    })
+    return
+  }
+  
   if (!eventoStore.eventos.length) {
     cargando.value = true
-    try { await eventoStore.cargarEventos() } finally { cargando.value = false }
+    try { 
+      await eventoStore.cargarEventos() 
+    } finally { 
+      cargando.value = false 
+    }
   }
 })
 
@@ -26,165 +41,626 @@ const eventoSeleccionado = computed(() => {
   return eventoStore.eventos.find(e => String(e.id) === String(id)) || null
 })
 
-const total = computed(() => Number(eventoSeleccionado.value?.precio || 0) * cantidad.value)
-
-// Nacho hay que mirar esta funcion!!! Por en el frontend no calcula bien el total hice esta otra forma para ver si podia andar, pero no funciono. 
-//const total = computed(() => {
-    
-//    const precio = eventoSeleccionado.value?.precio || 0;
-  
-  //  return Number(precio) * cantidad.value; 
-//});
-
+const total = computed(() => {
+  const precio = Number(eventoSeleccionado.value?.precio || 0)
+  return precio * cantidad.value
+})
 
 const confirmarCompra = async () => {
-    if (!eventoSeleccionado.value) { mensaje.value = 'Evento no disponible.'; return }
-    if (cantidad.value < 1) { mensaje.value = 'Cantidad mínima: 1.'; return }
+  if (!eventoSeleccionado.value) { 
+    mensaje.value = 'Evento no disponible.'
+    return 
+  }
+  
+  if (cantidad.value < 1) { 
+    mensaje.value = 'Cantidad mínima: 1.'
+    return 
+  }
+  
+  if (!usuarioStore.estaLogueado) {
+    mensaje.value = 'Debes iniciar sesión para comprar'
+    router.push('/login')
+    return
+  }
+  
+  mensaje.value = 'Procesando compra...'
+  cargando.value = true
+
+  try {
+    const ticketGuardado = await usuarioStore.comprarTicket(
+      eventoSeleccionado.value.id,
+      cantidad.value,
+      total.value
+    )
     
-    mensaje.value = 'Procesando compra...'
-
-    const nuevoTicket = {
-        eventoId: eventoSeleccionado.value.id,
-        evento: eventoSeleccionado.value.nombre || ('Evento ' + eventoSeleccionado.value.id),
-        cantidad: cantidad.value,
-        total: total.value,
-        fecha: new Date().toLocaleString('es-AR'),
-       
-        eventoDetalles: eventoSeleccionado.value 
-    };
-
-    try {
-        const response = await fetch(API_TICKETS_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(nuevoTicket)
-        });
-
-        if (!response.ok) {
-            throw new Error(`Error en la API: ${response.status}`);
-        }
-        
-      
-        const ticketGuardado = await response.json(); 
-        
-       
-        ticketConfirmado.value = ticketGuardado; 
-        compraExitosa.value = true;             
-        
-    } catch (error) {
-        console.error('Error al registrar la compra:', error);
-        mensaje.value = 'Error de conexión. Verifique la URL.';
+    ticketConfirmado.value = {
+      ...ticketGuardado,
+      eventoDetalles: eventoSeleccionado.value,
+      usuario: usuarioStore.usuarioActual.nombre
     }
+    
+    compraExitosa.value = true
+    mensaje.value = ''
+    
+  } catch (error) {
+    console.error('Error al registrar la compra:', error)
+    mensaje.value = error.message || 'Error al procesar la compra'
+  } finally {
+    cargando.value = false
+  }
 }
-  
+
 const seguirComprando = () => {
-  
-  router.push({ path: '/' }) 
+  router.push({ path: '/' })
 }
 
-
+const volverAlHome = () => {
+  router.push('/')
+}
 </script>
 
 <template>
-    <div class="compra-wrapper">
-        <h1 class="titulo-compra">Comprar Entradas</h1>
-        <div v-if="cargando" class="estado">Cargando evento...</div>
-        <div v-else-if="!eventoSeleccionado" class="estado">No se encontró el evento. Volvé al Home.</div>
-        
-        <div v-else class="layout">
-            <div v-if="compraExitosa && ticketConfirmado" class="compra-exitosa">
-                <h1 style="color: white; margin-bottom: 20px;">¡Gracias! Tu compra se ha realizado con éxito.</h1>
-                
-                <div class="resumen-ticket">
-                    <h3>Detalles del Ticket</h3>
-                    <p><strong>Numero de orden:</strong> {{ ticketConfirmado.id }}</p>
-                    
-                    <hr style="margin: 10px 0;">
-                    
-                    <h3>Evento</h3>
-                    <p><strong>Nombre:</strong> {{ ticketConfirmado.eventoDetalles.nombre }}</p>
-                    <p><strong>Lugar:</strong> {{ ticketConfirmado.eventoDetalles.lugar }}</p>
-                    <p><strong>Día:</strong> {{ ticketConfirmado.eventoDetalles.dia }}</p>
-                    
-                    <hr style="margin: 10px 0;">
+  <div class="compra-page">
 
-                    <h3>Resumen de la Transacción</h3>
-                    <p><strong>Cantidad Comprada:</strong> {{ ticketConfirmado.cantidad }}</p>
-                    <p class="total" style="color:blanchedalmond;"><strong>Total Pagado:</strong> ${{ ticketConfirmado.total.toFixed(2) }}</p>
-                    <p class="fecha-compra" style="font-size: 0.9em;">Registrado el: {{ ticketConfirmado.fecha }}</p>
-                </div>
-               <RouterLink to="/" class="btn-seguir-comprando">
-                  <button @click="seguirComprando" class="btn-confirmar" style="background-color: #32a8f0;">Seguir Comprando</button>  
-                </RouterLink>
-               </div>
-
-            
-
-            <template v-else>
-                <div class="evento-card-compra">
-                    <div class="imagen-box" v-if="eventoSeleccionado.imagen">
-                        <img :src="eventoSeleccionado.imagen" :alt="eventoSeleccionado.nombre" />
-                    </div>
-                    <div class="datos">
-                        <h2>{{ eventoSeleccionado.nombre || ('Evento ' + eventoSeleccionado.id) }}</h2>
-                        <div class="tags">
-                            <span class="tag modalidad" :class="eventoSeleccionado.modalidad.toLowerCase()">{{ eventoSeleccionado.modalidad }}</span>
-                            <span class="tag precio">$ {{ eventoSeleccionado.precio }}</span>
-                        </div>
-                        <p><strong>Lugar:</strong> {{ eventoSeleccionado.lugar }}</p>
-                        <p><strong>Día:</strong> {{ eventoSeleccionado.dia }}</p>
-                        <p><strong>Horario:</strong> {{ eventoSeleccionado.horario }}</p>
-                        <p class="desc"><strong>Descripción:</strong> {{ eventoSeleccionado.descripcion }}</p>
-                    </div>
-                </div>
-
-                <form @submit.prevent="confirmarCompra" class="form-compra">
-                    <h3>Seleccioná cantidad</h3>
-                    <div class="cantidad-row">
-                        <button type="button" @click="cantidad > 1 && (cantidad--)">-</button>
-                        <input type="number" min="1" v-model.number="cantidad" />
-                        <button type="button" @click="cantidad++">+</button>
-                    </div>
-                    <p class="total"><strong>Total:</strong> $ {{ total.toFixed(2) }}</p>
-                    <button type="submit" class="btn-confirmar">CONFIRMAR COMPRA</button>
-                    <p v-if="mensaje" class="mensaje">{{ mensaje }}</p>
-                </form>
-            </template>
-            </div>
+    <div v-if="cargando" class="loading-container">
+      <div class="loading-spinner"></div>
+      <p>Cargando evento...</p>
     </div>
+    
+
+    <div v-else-if="!eventoSeleccionado" class="error-container">
+      <h2>Evento no encontrado</h2>
+      <p>No se encontró el evento solicitado.</p>
+      <button @click="volverAlHome" class="btn-volver">Volver al inicio</button>
+    </div>
+    
+
+    <div v-else-if="compraExitosa && ticketConfirmado" class="compra-exitosa-container">
+      <div class="success-icon">✓</div>
+      <h1 class="success-title">¡Compra realizada con éxito!</h1>
+      <p class="success-subtitle">Gracias {{ ticketConfirmado.usuario }}</p>
+      
+      <div class="ticket-resumen">
+        <h3>Detalles de tu compra</h3>
+        <div class="ticket-info">
+          <p><strong>Número de orden:</strong> #{{ ticketConfirmado.id }}</p>
+          <p><strong>Evento:</strong> {{ ticketConfirmado.eventoDetalles.nombre }}</p>
+          <p><strong>Fecha:</strong> {{ ticketConfirmado.eventoDetalles.dia }}</p>
+          <p><strong>Lugar:</strong> {{ ticketConfirmado.eventoDetalles.lugar }}</p>
+          <p><strong>Cantidad:</strong> {{ ticketConfirmado.cantidad }} entrada(s)</p>
+          <p class="total-pagado"><strong>Total pagado:</strong> ${{ ticketConfirmado.montoTotal.toLocaleString('es-AR') }}</p>
+        </div>
+      </div>
+      
+      <div class="success-actions">
+        <button @click="router.push('/mis-tickets')" class="btn-primary">Ver Mis Tickets</button>
+        <button @click="seguirComprando" class="btn-secondary">Seguir Comprando</button>
+      </div>
+    </div>
+    
+
+    <div v-else class="compra-container">
+
+      <div class="event-header">
+        <h1 class="event-title">{{ eventoSeleccionado.nombre }}</h1>
+        <p class="event-date">{{ eventoSeleccionado.dia }} - {{ eventoSeleccionado.horario }}</p>
+      </div>
+
+
+      <div class="event-info-section">
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-label">Lugar:</span>
+            <span class="info-value">{{ eventoSeleccionado.lugar }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Modalidad:</span>
+            <span class="info-value">
+              <span :class="['badge-modalidad', eventoSeleccionado.modalidad.toLowerCase()]">
+                {{ eventoSeleccionado.modalidad }}
+              </span>
+            </span>
+          </div>
+        </div>
+        
+        <div v-if="eventoSeleccionado.descripcion" class="event-description">
+          <p><strong>Descripción:</strong></p>
+          <p>{{ eventoSeleccionado.descripcion }}</p>
+        </div>
+      </div>
+
+      <!-- Tabla de compra -->
+      <div class="compra-table-section">
+        <table class="compra-table">
+          <thead>
+            <tr>
+              <th>Tipo de Ticket</th>
+              <th>Valor</th>
+              <th>Cantidad</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <div class="ticket-type">
+                  <strong>{{ eventoSeleccionado.nombre }}</strong>
+                </div>
+              </td>
+              <td class="valor-cell">
+                <span class="precio-badge">$ {{ eventoSeleccionado.precio.toLocaleString('es-AR') }}</span>
+              </td>
+              <td class="cantidad-cell">
+                <div class="cantidad-controls">
+                  <button type="button" class="btn-cantidad" @click="cantidad > 1 && cantidad--">-</button>
+                  <span class="cantidad-display">{{ cantidad }}</span>
+                  <button type="button" class="btn-cantidad" @click="cantidad++">+</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="compra-footer">
+          <div class="total-section">
+            <span class="total-label">Total a pagar:</span>
+            <span class="total-amount">$ {{ total.toLocaleString('es-AR') }}</span>
+          </div>
+          
+          <button 
+            @click="confirmarCompra" 
+            class="btn-adquirir"
+            :disabled="cargando">
+            {{ cargando ? 'PROCESANDO...' : 'ADQUIRIR' }}
+          </button>
+        </div>
+
+        <!-- Mensaje de error -->
+        <div v-if="mensaje" class="mensaje-alert" :class="{ 'error': mensaje.includes('Error') }">
+          {{ mensaje }}
+        </div>
+      </div>
+
+      <!-- Información del comprador -->
+      <div class="comprador-info">
+        <p><strong>Comprando como:</strong> {{ usuarioStore.usuarioActual.nombre }}</p>
+        <p class="email-info">{{ usuarioStore.usuarioActual.email }}</p>
+      </div>
+    </div>
+  </div>
 </template>
 
 <style scoped>
-body {
-  background-color: #f7f7f7;
-  margin: 0;
-  padding: 0;
+.compra-page {
+  min-height: 100vh;
+  background: #f5f5f5;
+  padding: 20px;
 }
 
-.compra-wrapper { max-width:1100px; margin:0 auto; padding:32px 24px; }
-.titulo-compra { margin:0 0 28px; font-size:2.1rem; font-weight:700; letter-spacing:.5px; color:#1f2937; }
-.estado { text-align:center; padding:60px; color:#555; font-size:1rem; }
-.layout { display:grid; grid-template-columns: 1fr 360px; gap:36px; align-items:start; }
-.evento-card-compra { background:linear-gradient(135deg,#ffffff 0%,#f3f6fa 100%); border:1px solid #e5e7eb; border-radius:18px; box-shadow:0 8px 24px rgba(0,0,0,.08); overflow:hidden; display:flex; gap:28px; padding:28px; }
-.imagen-box { flex:0 0 300px; height:220px; overflow:hidden; border-radius:14px; box-shadow:0 4px 14px rgba(0,0,0,.12); }
-.imagen-box img { width:100%; height:100%; object-fit:cover; }
-.datos h2 { margin:0 0 14px; font-size:1.8rem; font-weight:700; color:#111827; }
-.tags { display:flex; gap:10px; margin-bottom:12px; }
-.tag { padding:6px 12px; border-radius:999px; font-size:.75rem; font-weight:700; letter-spacing:.5px; text-transform:uppercase; }
-.tag.modalidad.presencial { background:#3b82f6; color:#fff; }
-.tag.modalidad.virtual { background:#10b981; color:#fff; }
-.tag.precio { background:#f59e0b; color:#fff; }
-.datos p { margin:4px 0; font-size:.95rem; color:#374151; }
-.datos p.desc { margin-top:10px; line-height:1.3; }
-.form-compra { background:#ffffff; border:1px solid #e5e7eb; border-radius:18px; box-shadow:0 8px 24px rgba(0,0,0,.08); padding:28px; display:flex; flex-direction:column; gap:18px; }
-.form-compra h3 { margin:0; font-size:1.15rem; font-weight:700; color:#1f2937; }
-.cantidad-row { display:flex; align-items:center; gap:14px; }
-.cantidad-row button { width:42px; height:42px; border:none; background:#3b82f6; color:#fff; font-weight:700; font-size:1.1rem; border-radius:10px; cursor:pointer; transition:background .2s; }
-.cantidad-row button:hover { background:#2563eb; }
-.cantidad-row input { width:90px; text-align:center; padding:10px; border:1px solid #d1d5db; border-radius:8px; font-size:1rem; }
-.total { margin:0; font-size:1.05rem; font-weight:600; color:#111; }
-.btn-confirmar { background:#10b981; color:#fff; border:none; padding:16px 20px; border-radius:12px; font-weight:700; font-size:1rem; cursor:pointer; letter-spacing:.5px; box-shadow:0 6px 16px rgba(16,185,129,.3); transition:background .2s, transform .2s; }
-.btn-confirmar:hover { background:#059669; transform:translateY(-2px); }
-.mensaje { margin:0; font-size:.85rem; font-weight:600; color:#2563eb; }
-@media (max-width: 980px) { .layout { grid-template-columns:1fr; } .evento-card-compra { flex-direction:column; } .imagen-box { width:100%; height:240px; } }
+.loading-container,
+.error-container {
+  max-width: 600px;
+  margin: 100px auto;
+  text-align: center;
+  background: white;
+  padding: 60px 40px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 20px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.btn-volver {
+  margin-top: 20px;
+  padding: 12px 30px;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-volver:hover {
+  background: #2563eb;
+}
+
+/* Compra exitosa */
+.compra-exitosa-container {
+  max-width: 700px;
+  margin: 40px auto;
+  background: white;
+  border-radius: 12px;
+  padding: 50px 40px;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.success-icon {
+  width: 80px;
+  height: 80px;
+  background: #10b981;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  margin: 0 auto 20px;
+}
+
+.success-title {
+  font-size: 2rem;
+  color: #1f2937;
+  margin: 0 0 10px;
+}
+
+.success-subtitle {
+  font-size: 1.2rem;
+  color: #6b7280;
+  margin-bottom: 30px;
+}
+
+.ticket-resumen {
+  background: #f9fafb;
+  border-radius: 8px;
+  padding: 30px;
+  margin: 30px 0;
+  text-align: left;
+}
+
+.ticket-resumen h3 {
+  margin: 0 0 20px;
+  font-size: 1.3rem;
+  color: #1f2937;
+}
+
+.ticket-info p {
+  margin: 10px 0;
+  color: #4b5563;
+  font-size: 1rem;
+}
+
+.total-pagado {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 2px solid #e5e7eb;
+  font-size: 1.3rem;
+  color: #10b981;
+}
+
+.success-actions {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  margin-top: 30px;
+}
+
+.btn-primary,
+.btn-secondary {
+  padding: 14px 30px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-primary {
+  background: #10b981;
+  color: white;
+}
+
+.btn-primary:hover {
+  background: #059669;
+  transform: translateY(-2px);
+}
+
+.btn-secondary {
+  background: #e5e7eb;
+  color: #1f2937;
+}
+
+.btn-secondary:hover {
+  background: #d1d5db;
+}
+
+/* Formulario de compra */
+.compra-container {
+  max-width: 900px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+}
+
+.event-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 40px 30px;
+  color: white;
+  text-align: center;
+}
+
+.event-title {
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin: 0 0 15px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.event-date {
+  font-size: 1.2rem;
+  margin: 0;
+  opacity: 0.95;
+}
+
+.event-info-section {
+  padding: 30px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.info-label {
+  font-weight: 600;
+  color: #6b7280;
+}
+
+.info-value {
+  color: #1f2937;
+}
+
+.badge-modalidad {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.badge-modalidad.presencial {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.badge-modalidad.virtual {
+  background: #fce7f3;
+  color: #9f1239;
+}
+
+.event-description {
+  background: #f9fafb;
+  padding: 20px;
+  border-radius: 8px;
+  border-left: 4px solid #3b82f6;
+}
+
+.event-description p {
+  margin: 5px 0;
+  color: #4b5563;
+  line-height: 1.6;
+}
+
+.compra-table-section {
+  padding: 30px;
+}
+
+.compra-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 30px;
+}
+
+.compra-table thead {
+  background: #f3f4f6;
+}
+
+.compra-table th {
+  padding: 15px;
+  text-align: left;
+  font-weight: 600;
+  color: #374151;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.compra-table td {
+  padding: 20px 15px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.ticket-type strong {
+  display: block;
+  color: #1f2937;
+  font-size: 1.1rem;
+  margin-bottom: 5px;
+}
+
+.ticket-note {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #6b7280;
+  font-style: italic;
+}
+
+.valor-cell {
+  text-align: center;
+}
+
+.precio-badge {
+  background: #fef3c7;
+  color: #92400e;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.cantidad-cell {
+  text-align: center;
+}
+
+.cantidad-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: center;
+}
+
+.btn-cantidad {
+  width: 30px;
+  height: 30px;
+  border: 1px solid #d1d5db;
+  background: white;
+  color: #374151;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-cantidad:hover {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+}
+
+.cantidad-display {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #1f2937;
+  min-width: 30px;
+  text-align: center;
+}
+
+.compra-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  background: #f9fafb;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.total-section {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.total-label {
+  font-size: 0.95rem;
+  color: #6b7280;
+}
+
+.total-amount {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #10b981;
+}
+
+.btn-adquirir {
+  padding: 16px 50px;
+  background: #f59e0b;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-adquirir:hover:not(:disabled) {
+  background: #d97706;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.btn-adquirir:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.mensaje-alert {
+  padding: 15px;
+  border-radius: 8px;
+  text-align: center;
+  font-weight: 500;
+}
+
+.mensaje-alert.error {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+.comprador-info {
+  padding: 20px 30px;
+  background: #f9fafb;
+  border-top: 1px solid #e5e7eb;
+  text-align: center;
+}
+
+.comprador-info p {
+  margin: 5px 0;
+  color: #4b5563;
+}
+
+.email-info {
+  font-size: 0.9rem;
+  color: #9ca3af;
+}
+
+@media (max-width: 768px) {
+  .compra-footer {
+    flex-direction: column;
+    gap: 20px;
+    text-align: center;
+  }
+  
+  .btn-adquirir {
+    width: 100%;
+  }
+  
+  .compra-table th,
+  .compra-table td {
+    padding: 10px 8px;
+    font-size: 0.9rem;
+  }
+  
+  .event-title {
+    font-size: 1.8rem;
+  }
+}
 </style>

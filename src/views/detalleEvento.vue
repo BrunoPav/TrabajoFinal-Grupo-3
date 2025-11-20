@@ -10,11 +10,11 @@ const route = useRoute();
 const router = useRouter();
 const eventoStore = useEventoStore();
 
-//  ESTADOS REACTIVOS
+
 const eventoDetalle = ref(null);
 const cargando = ref(true);
 
-// Obtener el ID del evento de los parámetros de la ruta (URL)
+
 const eventoId = route.params.id;
 
 

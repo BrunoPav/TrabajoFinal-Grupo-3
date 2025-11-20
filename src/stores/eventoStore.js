@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import axios from 'axios'
+import dayjs from 'dayjs'
 
 const API_URL = 'https://69154c6384e8bd126af96b43.mockapi.io/eventos'
 
@@ -12,28 +13,16 @@ export const useEventoStore = defineStore('eventoStore', () => {
     try {
       const response = await axios.get(API_URL)
       const data = Array.isArray(response.data) ? response.data : []
-
-      const normalizarModalidad = (mod) => {
-        const s = String(mod || '').toLowerCase()
-        if (s.includes('virtual')) return 'Virtual'
-        if (s.includes('presencial')) return 'Presencial'
-        return 'Presencial'
-      }
-      const formatearFecha = (date) => date ? date.toISOString().split('T')[0] : ''
-      const formatearHora = (date) => date ? date.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' }) : ''
-
+      
       eventos.value = data.map((item) => {
         const base = { ...item }
-        const d = base.dia ? new Date(base.dia) : null
-
-        if (!base.nombre) base.nombre = `Evento ${base.id ?? ''}`.trim()
-
-        if (d && !Number.isNaN(d.getTime())) {
-          base.dia = formatearFecha(d)
-          if (!base.horario) base.horario = formatearHora(d)
+        
+        if (base.dia && dayjs(base.dia).isValid()) {
+          const fechaOriginal = dayjs(base.dia)
+          base.dia = fechaOriginal.format('DD-MM-YYYY')
+          if (!base.horario) base.horario = fechaOriginal.format('HH:mm')
         }
-
-        base.modalidad = normalizarModalidad(base.modalidad)
+        
         return base
       })
     } catch (error) {

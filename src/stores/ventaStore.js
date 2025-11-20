@@ -2,8 +2,7 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
 export const useVentaStore = defineStore('ventaStore', () => {
-	// Array reactivo de ventas
-	// cada venta: { id, eventoId, cantidad, monto, fecha }
+
 	const ventas = ref([])
 
 	const registrarVenta = (venta) => {

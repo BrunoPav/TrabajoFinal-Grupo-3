@@ -33,23 +33,23 @@ const handleComprar = () => {
 
       <ul class="meta-list">
         <li>
-          <span class="icon">📍</span>
+          <span class="icon"></span>
           <span class="label">Lugar:</span> {{ evento.lugar }}
         </li>
         <li>
-          <span class="icon">🗓️</span>
+          <span class="icon"></span>
           <span class="label">Día:</span> {{ evento.dia }}
         </li>
         <li>
-          <span class="icon">🕒</span>
+          <span class="icon"></span>
           <span class="label">Horario:</span> {{ evento.horario }}
         </li>
         <li>
-          <span class="icon">📝</span>
+          <span class="icon"></span>
           <span class="label">Descripción:</span> {{ evento.descripcion }}
         </li>
         <li>
-          <span class="icon">🌐</span>
+          <span class="icon"></span>
           <span class="label">Modalidad:</span>
           <span :class="['modalidad-tag', evento.modalidad.toLowerCase()]">
             {{ evento.modalidad }}
