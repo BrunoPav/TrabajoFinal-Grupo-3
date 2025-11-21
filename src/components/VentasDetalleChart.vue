@@ -37,7 +37,7 @@ const props = defineProps({
     }
 });
 
-const API_TICKETS_URL = 'https://6918dbf29ccba073ee919f1c.mockapi.io/tickets/tickets'; 
+const API_TICKETS_URL = 'https://691d169bd58e64bf0d34f5f9.mockapi.io/tickets'; 
 
 
 const chartRecaudacionCanvas = ref(null); //  Recaudación
@@ -70,7 +70,7 @@ async function fetchDataAndRender() {
                 .filter(ticket => String(ticket.eventoId) === String(props.eventoId));
 
             ticketsFiltrados.forEach(ticket => {
-                    const montoTicket = parseFloat(ticket.total) || 0; 
+                    const montoTicket = parseFloat(ticket.montoTotal) || 0; 
                     const cantidadTicket = parseInt(ticket.cantidad) || 0; 
                     
                     const categoria = ticket.categoria || 'General';

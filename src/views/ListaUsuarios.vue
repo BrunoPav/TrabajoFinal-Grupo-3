@@ -29,7 +29,7 @@ const goToCrearUsuario = () => {
         </div>
         <div class="nav-center">
           <router-link to="/gerente" class="btn-nav">Volver al Dashboard</router-link>
-          <button @click="goToCrearUsuario" class="btn-crear">➕ Crear Usuario</button>
+         
         </div>
         <div class="perfil">
           <span>Hola, Gerente</span>

@@ -19,7 +19,7 @@ Chart.register(...registerables, DoughnutController, ArcElement, Tooltip, Legend
 const API_EVENTS_URL = 'https://69154c6384e8bd126af96b43.mockapi.io/eventos'; 
 // URL de Tickets (donde se guardan las compras)
 // ⚠️ IMPORTANTE: REEMPLAZA ESTA URL CON TU ENDPOINT REAL DE TICKETS
-const API_TICKETS_URL = 'https://6918dbf29ccba073ee919f1c.mockapi.io/tickets/tickets'; 
+const API_TICKETS_URL = 'https://691d169bd58e64bf0d34f5f9.mockapi.io/tickets'; 
 
 // 1. Estado Reactivo para los datos del gráfico
 const chartLabels = ref([]); 
@@ -42,7 +42,7 @@ async function fetchData() {
             tickets.forEach(ticket => {
                 const id = ticket.eventoId;
                 // Asegurarse de que el total es un número, o usar 0 como fallback
-                const totalTicket = parseFloat(ticket.total) || 0; 
+                const totalTicket = parseFloat(ticket.montoTotal) || 0; 
                 
                 if (id && totalTicket > 0) {
                     if (!recaudacionPorEvento[id]) {

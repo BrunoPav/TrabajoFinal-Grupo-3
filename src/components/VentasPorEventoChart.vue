@@ -18,7 +18,7 @@ const API_EVENTS_URL = 'https://69154c6384e8bd126af96b43.mockapi.io/eventos';
 
 // ⚠️ ¡¡¡CORRECCIÓN CLAVE!!!
 // REEMPLAZA '[TU_MOCKAPI_ID]' CON TU IDENTIFICADOR ÚNICO DE PROYECTO REAL
-const API_TICKETS_URL = 'https://6918dbf29ccba073ee919f1c.mockapi.io/tickets/tickets'; 
+const API_TICKETS_URL = 'https://691d169bd58e64bf0d34f5f9.mockapi.io/tickets'; 
 
 // 1. Estado Reactivo para los datos del gráfico
 const chartLabels = ref([]); 
