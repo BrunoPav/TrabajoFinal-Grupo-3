@@ -44,6 +44,12 @@ const routes = [
     meta: { requiresAuth: true, roles: ['gerente'] }
   },
   { 
+    path: '/usuario-detalle', 
+    name: 'UsuarioDetalle', 
+    component: () => import('./views/UsuarioDetalle.vue'),
+    meta: { requiresAuth: true, roles: ['gerente'] }
+  },
+  { 
     path: '/gerente/eventos/:id', 
     name: 'DetalleEventoGerente',
     component: DetalleEvento,

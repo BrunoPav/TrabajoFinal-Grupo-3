@@ -131,6 +131,22 @@ export const useUsuarioStore = defineStore('usuario', () => {
     }
   }
 
+  const obtenerTicketsPorUsuario = async (usuarioId) => {
+    try {
+      const response = await axios.get(API_TICKETS_URL)
+      const todosLosTickets = response.data
+      
+      const ticketsUsuario = todosLosTickets.filter(
+        ticket => String(ticket.usuarioId) === String(usuarioId)
+      )
+      
+      return ticketsUsuario
+    } catch (error) {
+      console.error('Error al obtener tickets del usuario:', error)
+      throw error
+    }
+  }
+
   const comprarTicket = async (eventoId, cantidad, montoTotal) => {
     if (!usuarioActual.value) {
       throw new Error('Debes iniciar sesión para comprar')
@@ -172,6 +188,7 @@ export const useUsuarioStore = defineStore('usuario', () => {
     logout,
     restaurarSesion,
     obtenerMisTickets,
+    obtenerTicketsPorUsuario,
     comprarTicket
   }
 })

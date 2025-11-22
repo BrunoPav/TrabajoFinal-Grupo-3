@@ -1,11 +1,47 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUsuarioStore } from '../stores/usuarioStore'
 
 const usuarioStore = useUsuarioStore()
-const usuariosListado = computed(() => usuarioStore.usuarios || [])
+const ticketsPorUsuario = ref({}) 
+
+const usuariosListado = computed(() => {
+
+  return (usuarioStore.usuarios || [])
+    .filter(usuario => usuario.rol === 'cliente' || !usuario.rol)
+    .map(usuario => ({
+      ...usuario,
+      ticketsComprados: ticketsPorUsuario.value[usuario.id] || 0
+    }))
+})
 const router = useRouter()
+
+
+const cargarTicketsPorUsuario = async () => {
+  try {
+    const response = await fetch('https://691d169bd58e64bf0d34f5f9.mockapi.io/tickets')
+    const todosLosTickets = await response.json()
+
+    const conteos = {}
+    todosLosTickets.forEach(ticket => {
+      const usuarioId = ticket.usuarioId
+      if (usuarioId) {
+        conteos[usuarioId] = (conteos[usuarioId] || 0) + (parseInt(ticket.cantidad) || 1)
+      }
+    })
+    
+    ticketsPorUsuario.value = conteos
+  } catch (error) {
+    console.error('Error cargando tickets:', error)
+  }
+}
+
+
+onMounted(async () => {
+  await usuarioStore.cargarUsuarios()
+  await cargarTicketsPorUsuario()
+})
 
 const goToDetalle = (user) => {
 
@@ -39,29 +75,33 @@ const goToCrearUsuario = () => {
     </nav>
 
     <div class="contenedor-principal">
-      <h2 class="titulo-panel">Listado y Métricas de Usuarios</h2>
+      <h2 class="titulo-panel">Listado de Clientes</h2>
 
+      <!-- Tabla de usuarios -->
       <table class="tabla-usuarios" v-if="usuariosListado.length > 0">
         <thead>
           <tr>
+            <th>ID</th>
             <th>Email</th>
             <th>Nombre</th>
-            <th class="text-center">Tickets Comprados</th>
-            <th class="text-right">Recaudación Total</th>
+            <th>Tickets Comprados</th>
           </tr>
         </thead>
         <tbody>
           <tr v-for="user in usuariosListado" :key="user.id" @click="goToDetalle(user)">
+            <td>{{ user.id }}</td>
             <td class="email-col">{{ user.email || 'N/A' }}</td>
-            <td>{{ user.nombre || 'Nombre Apellido' }}</td>
-            <td class="text-center">{{ user.cantidadEntradas || 0 }}</td>
-            <td class="text-right">${{ (user.valorTotal || 0).toLocaleString('es-AR') }}</td>
+            <td>{{ user.nombre || 'Sin nombre' }}</td>
+            <td class="text-center">
+              <span class="tickets-count">{{ user.ticketsComprados }}</span>
+            </td>
           </tr>
         </tbody>
       </table>
 
+      <!-- Estado vacío -->
       <div class="estado-vacio" v-else>
-        <p class="mensaje-vacio">No hay usuarios registrados en el sistema para mostrar.</p>
+        <p class="mensaje-vacio">No hay clientes registrados en el sistema para mostrar.</p>
       </div>
     </div>
   </div>
@@ -243,6 +283,15 @@ const goToCrearUsuario = () => {
   font-size: 1.2rem;
   color: #6b7280;
   font-style: italic;
+}
+
+.tickets-count {
+  background-color: #f3f4f6;
+  color: #374151;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 0.9rem;
 }
 
 @media (max-width: 768px) {
