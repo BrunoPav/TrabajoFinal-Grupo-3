@@ -9,7 +9,6 @@ const router = useRouter()
 const eventoStore = useEventoStore()
 const usuarioStore = useUsuarioStore()
 
-const cargando = ref(false)
 const cantidad = ref(1)
 const mensaje = ref('')
 const compraExitosa = ref(false)
@@ -17,7 +16,6 @@ const ticketConfirmado = ref(null)
 
 onMounted(async () => {
   await usuarioStore.restaurarSesion()
-  
   if (!usuarioStore.estaLogueado) {
     router.push({ 
       path: '/login', 
@@ -25,14 +23,8 @@ onMounted(async () => {
     })
     return
   }
-  
   if (!eventoStore.eventos.length) {
-    cargando.value = true
-    try { 
-      await eventoStore.cargarEventos() 
-    } finally { 
-      cargando.value = false 
-    }
+    await eventoStore.cargarEventos()
   }
 })
 
@@ -51,42 +43,32 @@ const confirmarCompra = async () => {
     mensaje.value = 'Evento no disponible.'
     return 
   }
-  
   if (cantidad.value < 1) { 
     mensaje.value = 'Cantidad mínima: 1.'
     return 
   }
-  
   if (!usuarioStore.estaLogueado) {
     mensaje.value = 'Debes iniciar sesión para comprar'
     router.push('/login')
     return
   }
-  
   mensaje.value = 'Procesando compra...'
-  cargando.value = true
-
   try {
     const ticketGuardado = await usuarioStore.comprarTicket(
       eventoSeleccionado.value.id,
       cantidad.value,
       total.value
     )
-    
     ticketConfirmado.value = {
       ...ticketGuardado,
       eventoDetalles: eventoSeleccionado.value,
       usuario: usuarioStore.usuarioActual.nombre
     }
-    
     compraExitosa.value = true
     mensaje.value = ''
-    
   } catch (error) {
     console.error('Error al registrar la compra:', error)
     mensaje.value = error.message || 'Error al procesar la compra'
-  } finally {
-    cargando.value = false
   }
 }
 
@@ -101,25 +83,15 @@ const volverAlHome = () => {
 
 <template>
   <div class="compra-page">
-
-    <div v-if="cargando" class="loading-container">
-      <div class="loading-spinner"></div>
-      <p>Cargando evento...</p>
-    </div>
-    
-
-    <div v-else-if="!eventoSeleccionado" class="error-container">
+    <div v-if="!eventoSeleccionado" class="error-container">
       <h2>Evento no encontrado</h2>
       <p>No se encontró el evento solicitado.</p>
       <button @click="volverAlHome" class="btn-volver">Volver al inicio</button>
     </div>
-    
-
     <div v-else-if="compraExitosa && ticketConfirmado" class="compra-exitosa-container">
       <div class="success-icon">✓</div>
       <h1 class="success-title">¡Compra realizada con éxito!</h1>
       <p class="success-subtitle">Gracias {{ ticketConfirmado.usuario }}</p>
-      
       <div class="ticket-resumen">
         <h3>Detalles de tu compra</h3>
         <div class="ticket-info">
@@ -131,22 +103,16 @@ const volverAlHome = () => {
           <p class="total-pagado"><strong>Total pagado:</strong> ${{ ticketConfirmado.montoTotal.toLocaleString('es-AR') }}</p>
         </div>
       </div>
-      
       <div class="success-actions">
         <button @click="router.push('/mis-tickets')" class="btn-primary">Ver Mis Tickets</button>
         <button @click="seguirComprando" class="btn-secondary">Seguir Comprando</button>
       </div>
     </div>
-    
-
     <div v-else class="compra-container">
-
       <div class="event-header">
         <h1 class="event-title">{{ eventoSeleccionado.nombre }}</h1>
         <p class="event-date">{{ eventoSeleccionado.dia }} - {{ eventoSeleccionado.horario }}</p>
       </div>
-
-
       <div class="event-info-section">
         <div class="info-grid">
           <div class="info-item">
@@ -162,14 +128,11 @@ const volverAlHome = () => {
             </span>
           </div>
         </div>
-        
         <div v-if="eventoSeleccionado.descripcion" class="event-description">
           <p><strong>Descripción:</strong></p>
           <p>{{ eventoSeleccionado.descripcion }}</p>
         </div>
       </div>
-
-      <!-- Tabla de compra -->
       <div class="compra-table-section">
         <table class="compra-table">
           <thead>
@@ -199,28 +162,21 @@ const volverAlHome = () => {
             </tr>
           </tbody>
         </table>
-
         <div class="compra-footer">
           <div class="total-section">
             <span class="total-label">Total a pagar:</span>
             <span class="total-amount">$ {{ total.toLocaleString('es-AR') }}</span>
           </div>
-          
           <button 
             @click="confirmarCompra" 
-            class="btn-adquirir"
-            :disabled="cargando">
-            {{ cargando ? 'PROCESANDO...' : 'ADQUIRIR' }}
+            class="btn-adquirir">
+            ADQUIRIR
           </button>
         </div>
-
-        <!-- Mensaje de error -->
         <div v-if="mensaje" class="mensaje-alert" :class="{ 'error': mensaje.includes('Error') }">
           {{ mensaje }}
         </div>
       </div>
-
-      <!-- Información del comprador -->
       <div class="comprador-info">
         <p><strong>Comprando como:</strong> {{ usuarioStore.usuarioActual.nombre }}</p>
         <p class="email-info">{{ usuarioStore.usuarioActual.email }}</p>

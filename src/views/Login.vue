@@ -11,24 +11,16 @@ const rolStore = useRolStore()
 const email = ref("");
 const password = ref("");
 const error = ref("");
-const cargando = ref(false);
 const modoRegistro = ref(false);
 const nombre = ref("");
 
 const goHome = () => router.push('/')
 
 const login = async () => {
-  error.value = "";
-  cargando.value = true;
-  
   try {
     const usuario = await usuarioStore.login(email.value, password.value);
-    
-
     const rolFormateado = `${usuario.rol}@a`; 
     rolStore.setRol(rolFormateado);
-    
-
     if (usuario.rol === 'gerente') {
       router.push('/gerente');
     } else {
@@ -36,21 +28,14 @@ const login = async () => {
     }
   } catch (err) {
     error.value = err.message || "Error al iniciar sesión. Verifica tus credenciales.";
-  } finally {
-    cargando.value = false;
   }
 }
 
 const registrar = async () => {
-  error.value = "";
-  
   if (!nombre.value || !email.value || !password.value) {
     error.value = "Todos los campos son obligatorios";
     return;
   }
-  
-  cargando.value = true;
-  
   try {
     await usuarioStore.registrar({
       nombre: nombre.value,
@@ -58,13 +43,9 @@ const registrar = async () => {
       password: password.value,
       rol: 'cliente' 
     });
-    
-
     await login();
   } catch (err) {
     error.value = err.message || "Error al registrarse";
-  } finally {
-    cargando.value = false;
   }
 }
 
@@ -96,8 +77,8 @@ const toggleModo = () => {
         <label for="password">Contraseña</label>
         <input type="password" id="password" v-model="password" required />
 
-        <button type="submit" class="btn-login" :disabled="cargando">
-          {{ cargando ? 'Procesando...' : (modoRegistro ? 'REGISTRARSE' : 'INGRESAR') }}
+        <button type="submit" class="btn-login">
+          {{ modoRegistro ? 'REGISTRARSE' : 'INGRESAR' }}
         </button>
       </form>
 

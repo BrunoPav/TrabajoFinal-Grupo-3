@@ -21,7 +21,6 @@ onMounted(async () => {
     return
   }
   
-
   if (!eventoStore.eventos.length) {
     try {
       await eventoStore.cargarEventos()
@@ -50,7 +49,7 @@ onMounted(async () => {
   }
 })
 
-const cargarTickets = async () => {
+/*const cargarTickets = async () => {
   cargando.value = true
   error.value = ''
   try {
@@ -68,7 +67,7 @@ const cargarTickets = async () => {
   } finally {
     cargando.value = false
   }
-}
+}*/
 
 const goHome = () => router.push('/')
 const logout = () => {
