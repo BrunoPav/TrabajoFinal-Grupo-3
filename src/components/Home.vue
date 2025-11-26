@@ -28,7 +28,6 @@ onMounted(async () => {
 
 const eventosGuardados = computed(() => eventoStore.eventos)
 
-const showFiltros = ref(false)
 const search = ref('')
 const minPrecio = ref('')
 const maxPrecio = ref('')

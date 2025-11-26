@@ -3,18 +3,13 @@ import { ref, onMounted, nextTick } from 'vue';
 import { 
     Chart, 
     registerables,
-    // Componentes  Gráficos de Barras
     BarController,
     CategoryScale,
     LinearScale,
-    BarElement,
-    Tooltip,
-    Legend,
-    // no se usen:
-    DoughnutController, ArcElement
+    BarElement
 } from 'chart.js';
 
-// Registra elementos necesarios
+
 Chart.register(
     ...registerables, 
     BarController, CategoryScale, LinearScale, BarElement
@@ -40,14 +35,14 @@ const props = defineProps({
 const API_TICKETS_URL = 'https://691d169bd58e64bf0d34f5f9.mockapi.io/tickets'; 
 
 
-const chartRecaudacionCanvas = ref(null); //  Recaudación
-const chartCapacidadCanvas = ref(null); // Vendida
+const chartRecaudacionCanvas = ref(null);
+const chartCapacidadCanvas = ref(null); 
 const cargandoDatos = ref(true);
 const tieneDatos = ref(false); 
 const resumenRecaudacion = ref(0); 
 const totalTicketsVendidos = ref(0); 
 
-// Obtener datos
+
 async function fetchDataAndRender() {
     cargandoDatos.value = true;
     
@@ -64,7 +59,7 @@ async function fetchDataAndRender() {
         
         const todosLosTickets = await ticketsResponse.json();
         
-        // Filtrar y procesar solo los tickets para ESTE evento
+
         if (Array.isArray(todosLosTickets)) {
             const ticketsFiltrados = todosLosTickets
                 .filter(ticket => String(ticket.eventoId) === String(props.eventoId));
@@ -76,14 +71,13 @@ async function fetchDataAndRender() {
                     const categoria = ticket.categoria || 'General';
                     
                     if (montoTicket > 0 || cantidadTicket > 0) { 
-                        // Sumar Recaudación 
+
                         if (!recaudacionPorCategoria[categoria]) {
                             recaudacionPorCategoria[categoria] = 0;
                         }
                         recaudacionPorCategoria[categoria] += montoTicket;
                         acumuladoRecaudacion += montoTicket;
 
-                        // Suma de Cantidad de Entradas
                         acumuladoTickets += cantidadTicket; 
                     }
                 });
@@ -91,23 +85,20 @@ async function fetchDataAndRender() {
         
         cargandoDatos.value = false;
         
-        // Verificar si hay datos para renderizar
         if (acumuladoRecaudacion === 0 && acumuladoTickets === 0) {
             tieneDatos.value = false;
             return;
         }
 
-        // Si hay datos, actualiza los estados reactivos
         tieneDatos.value = true;
         resumenRecaudacion.value = acumuladoRecaudacion;
         totalTicketsVendidos.value = acumuladoTickets; 
         
         
         nextTick(() => { 
-            //  Gráfico de Recaudación (usa recaudacionPorCategoria)
+
             renderRecaudacionChart(recaudacionPorCategoria); 
-            
-            // Gráfico de Cantidad Vendida (usa acumuladoTickets)
+
             renderCantidadChart(acumuladoTickets); 
         });
 
@@ -117,7 +108,6 @@ async function fetchDataAndRender() {
     }
 }
 
-// Función para inicializar Chart.js (Gráfico de Barras)
 function renderRecaudacionChart(recaudacionPorCategoria) {
     if (chartRecaudacionCanvas.value) { 
         const ctx = chartRecaudacionCanvas.value.getContext('2d');
@@ -143,7 +133,7 @@ function renderRecaudacionChart(recaudacionPorCategoria) {
             },
             options: {
                 responsive: true,
-                indexAxis: 'y', // Eje Horizontal
+                indexAxis: 'y', 
                 maintainAspectRatio: false,
                 plugins: {
                     title: {
@@ -166,13 +156,12 @@ function renderRecaudacionChart(recaudacionPorCategoria) {
                         beginAtZero: true,
                         ticks: {
                             callback: function(value) {
-                                //  valores del eje X como moneda
                                 return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0 }).format(value);
                             }
                         }
                     },
                     y: {
-                        display: true // Mostrar las etiquetas de las categorías
+                        display: true 
                     }
                 }
             }
@@ -181,7 +170,6 @@ function renderRecaudacionChart(recaudacionPorCategoria) {
 }
 
 
-//  inicializar Chart.js (Cantidad Vendida)
 function renderCantidadChart(ticketsVendidos) {
     if (chartCapacidadCanvas.value) {
         const ctx = chartCapacidadCanvas.value.getContext('2d');
@@ -189,8 +177,7 @@ function renderCantidadChart(ticketsVendidos) {
         if (chartCapacidadCanvas.value.chart) {
             chartCapacidadCanvas.value.chart.destroy();
         }
-        
-        //  mostrar el total vendido
+      
         chartCapacidadCanvas.value.chart = new Chart(ctx, {
             type: 'bar',
             data: {
@@ -205,7 +192,7 @@ function renderCantidadChart(ticketsVendidos) {
             },
             options: {
                 responsive: true,
-                indexAxis: 'y', // horizontal
+                indexAxis: 'y',
                 maintainAspectRatio: false,
                 plugins: {
                     title: {

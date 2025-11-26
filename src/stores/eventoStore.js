@@ -53,15 +53,6 @@ export const useEventoStore = defineStore('eventoStore', () => {
     }
   }
 
-  const borrarEvento = async (id) => {
-    try {
-      await axios.delete(`${API_URL}/${id}`)
-      eventos.value = eventos.value.filter(e => e.id !== id)
-    } catch (error) {
-      console.error('Error al borrar evento:', error)
-    }
-  }
 
-
-  return { eventos, cargarEventos, agregarEvento, actualizarEvento, borrarEvento }
+  return { eventos, cargarEventos, agregarEvento, actualizarEvento }
 })

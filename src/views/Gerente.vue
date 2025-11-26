@@ -9,7 +9,7 @@ import { useRouter } from 'vue-router'
 const eventoStore = useEventoStore()
 const router = useRouter()
 const goHome = () => router.push('/')
-const cargandoEventos = ref(false)
+
 
 
 const verDetalle = (id) => {
@@ -20,13 +20,11 @@ const verDetalle = (id) => {
 
 onMounted(async () => {
     if (eventoStore.eventos.length === 0) {
-        cargandoEventos.value = true
         try {
             await eventoStore.cargarEventos() 
         } catch (error) {
             console.error('Fallo la carga inicial de eventos:', error)
         } finally {
-            cargandoEventos.value = false
         }
     }
 })

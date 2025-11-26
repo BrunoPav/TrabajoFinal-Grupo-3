@@ -9,7 +9,6 @@ export const useUsuarioStore = defineStore('usuario', () => {
 
   const usuarios = ref([])
   const usuarioActual = ref(null) 
-  const token = ref(localStorage.getItem('token') || null) 
 
   const estaLogueado = computed(() => !!usuarioActual.value)
   const esCliente = computed(() => usuarioActual.value?.rol === 'cliente')
@@ -44,12 +43,7 @@ export const useUsuarioStore = defineStore('usuario', () => {
       
 
       usuarioActual.value = usuario
-      
 
-      token.value = `token_${usuario.id}_${Date.now()}`
-      localStorage.setItem('token', token.value)
-      localStorage.setItem('usuarioId', usuario.id)
-      
       return usuario
     } catch (error) {
       console.error('Error en login:', error)
@@ -86,7 +80,7 @@ export const useUsuarioStore = defineStore('usuario', () => {
 
   const logout = () => {
     usuarioActual.value = null
-    token.value = null
+
     localStorage.removeItem('token')
     localStorage.removeItem('usuarioId')
   }
@@ -94,13 +88,11 @@ export const useUsuarioStore = defineStore('usuario', () => {
 
   const restaurarSesion = async () => {
     const usuarioId = localStorage.getItem('usuarioId')
-    const tokenGuardado = localStorage.getItem('token')
     
-    if (usuarioId && tokenGuardado) {
+    if (usuarioId) {
       try {
         const response = await axios.get(`${API_USUARIOS_URL}/${usuarioId}`)
         usuarioActual.value = response.data
-        token.value = tokenGuardado
         return response.data
       } catch (error) {
         console.error('Error al restaurar sesión:', error)
@@ -173,7 +165,6 @@ export const useUsuarioStore = defineStore('usuario', () => {
 
     usuarios,
     usuarioActual,
-    token,
     
  
     estaLogueado,

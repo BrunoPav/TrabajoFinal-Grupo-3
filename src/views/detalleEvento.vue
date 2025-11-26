@@ -56,7 +56,7 @@ const volverAlPanel = () => {
 </script>
 
 <template>
-    <!-- El contenedor principal  -->
+
     <div class="detalle-view-wrapper">
         
     
@@ -70,7 +70,7 @@ const volverAlPanel = () => {
                 </div>
                 <div class="nav-center">
                     <router-link to="/listausuario" class="btn-nav">Lista de usuarios</router-link>
-                    <router-link to="/listausuario" class="btn-nav">Reintegros</router-link>
+
                 </div>
                 <div class="perfil">
                     <span>Hola, Gerente</span>

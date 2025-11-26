@@ -109,7 +109,6 @@ const logout = () => {
       </div>
 
       <div v-else-if="tickets.length === 0" class="estado-vacio">
-        <span class="empty-icon">🎫</span>
         <h3>No tienes tickets aún</h3>
         <p>Cuando compres entradas aparecerán aquí.</p>
         <router-link to="/" class="btn-explorar">Explorar eventos</router-link>

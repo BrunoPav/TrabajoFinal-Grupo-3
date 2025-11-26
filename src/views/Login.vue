@@ -21,7 +21,11 @@ const login = async () => {
     const usuario = await usuarioStore.login(email.value, password.value);
     const rolFormateado = `${usuario.rol}@a`; 
     rolStore.setRol(rolFormateado);
-    if (usuario.rol === 'gerente') {
+    const redirect = router.currentRoute.value.query.redirect;
+    if (redirect) {
+      router.push(redirect);
+    }
+    else if (usuario.rol === 'gerente') {
       router.push('/gerente');
     } else {
       router.push('/');

@@ -170,7 +170,7 @@ const volverAlHome = () => {
           <button 
             @click="confirmarCompra" 
             class="btn-adquirir">
-            ADQUIRIR
+            COMPRAR
           </button>
         </div>
         <div v-if="mensaje" class="mensaje-alert" :class="{ 'error': mensaje.includes('Error') }">

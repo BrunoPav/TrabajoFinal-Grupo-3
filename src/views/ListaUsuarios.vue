@@ -49,9 +49,6 @@ const goToDetalle = (user) => {
 }
 
 
-const goToCrearUsuario = () => {
-  router.push('/usuario-crear')
-} 
 </script>
 
 
